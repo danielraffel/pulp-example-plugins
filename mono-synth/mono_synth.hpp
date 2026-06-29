@@ -10,6 +10,7 @@
 // "oscillator * envelope" voice, kept deliberately small as a teaching example.
 
 #include <pulp/format/processor.hpp>
+#include <pulp/view/view.hpp>
 #include <pulp/signal/adsr.hpp>
 #include <pulp/signal/oscillator.hpp>
 
@@ -27,8 +28,17 @@ enum MonoSynthParams : state::ParamID {
     kRelease  = 5,
 };
 
+// Defined out-of-line in mono_synth_editor.hpp (included at the bottom of this file).
+// Forward-declared so the editor the screenshot tests render is the same
+// tree the host receives from create_view().
+std::unique_ptr<view::View> build_mono_synth_editor(state::StateStore& store);
+
 class MonoSynthProcessor : public format::Processor {
 public:
+    // Hand the host our dark Ink & Signal editor; the framework owns the
+    // returned tree and may call this once per attached editor window.
+    std::unique_ptr<view::View> create_view() override { return build_mono_synth_editor(state()); }
+
     format::PluginDescriptor descriptor() const override {
         return {
             .name = "MonoSynth",
@@ -154,3 +164,8 @@ inline std::unique_ptr<format::Processor> create_mono_synth() {
 }
 
 } // namespace pulp::examples::classic
+
+// Pulls in the inline definition of build_mono_synth_editor (declared above) so create_view()
+// links in the plugin adapter and the headless tests alike. After the class so
+// the editor header sees a complete definition; its re-include is a no-op.
+#include "mono_synth_editor.hpp"

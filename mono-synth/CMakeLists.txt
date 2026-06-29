@@ -2,7 +2,7 @@
 
 if(PULP_BUILD_TESTS)
     add_executable(mono-synth-test test_mono_synth.cpp)
-    target_link_libraries(mono-synth-test PRIVATE pulp::format pulp::signal Catch2::Catch2WithMain)
+    target_link_libraries(mono-synth-test PRIVATE pulp::format pulp::view pulp::signal Catch2::Catch2WithMain)
     target_include_directories(mono-synth-test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     catch_discover_tests(mono-synth-test)
 endif()

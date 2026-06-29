@@ -16,6 +16,7 @@
 // all-notes-off); a production spreader would flush note-offs for held notes.
 
 #include <pulp/format/processor.hpp>
+#include <pulp/view/view.hpp>
 
 #include <algorithm>
 #include <array>
@@ -24,8 +25,17 @@
 
 namespace pulp::examples::classic {
 
+// Defined out-of-line in mpe_spreader_editor.hpp (included at the bottom of this file).
+// Forward-declared so the editor the screenshot tests render is the same
+// tree the host receives from create_view().
+std::unique_ptr<view::View> build_mpe_spreader_editor(state::StateStore& store);
+
 class MpeSpreaderProcessor : public format::Processor {
 public:
+    // Hand the host our dark Ink & Signal editor; the framework owns the
+    // returned tree and may call this once per attached editor window.
+    std::unique_ptr<view::View> create_view() override { return build_mpe_spreader_editor(state()); }
+
     static constexpr int kFirstMember = 1;   // 0-indexed channel 1 == MIDI ch 2
     static constexpr int kLastMember = 15;   // 0-indexed channel 15 == MIDI ch 16
 
@@ -119,3 +129,8 @@ inline std::unique_ptr<format::Processor> create_mpe_spreader() {
 }
 
 } // namespace pulp::examples::classic
+
+// Pulls in the inline definition of build_mpe_spreader_editor (declared above) so create_view()
+// links in the plugin adapter and the headless tests alike. After the class so
+// the editor header sees a complete definition; its re-include is a no-op.
+#include "mpe_spreader_editor.hpp"

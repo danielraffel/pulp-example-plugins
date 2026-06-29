@@ -10,6 +10,7 @@
 // (accepts_midi / produces_midi, the midi_in -> midi_out path in process()).
 
 #include <pulp/format/processor.hpp>
+#include <pulp/view/view.hpp>
 
 #include <algorithm>
 #include <memory>
@@ -20,8 +21,17 @@ enum MidiTransposeParams : state::ParamID {
     kSemitones = 1,  // -24 .. +24
 };
 
+// Defined out-of-line in midi_transpose_editor.hpp (included at the bottom of this file).
+// Forward-declared so the editor the screenshot tests render is the same
+// tree the host receives from create_view().
+std::unique_ptr<view::View> build_midi_transpose_editor(state::StateStore& store);
+
 class MidiTransposeProcessor : public format::Processor {
 public:
+    // Hand the host our dark Ink & Signal editor; the framework owns the
+    // returned tree and may call this once per attached editor window.
+    std::unique_ptr<view::View> create_view() override { return build_midi_transpose_editor(state()); }
+
     format::PluginDescriptor descriptor() const override {
         return {
             .name = "MidiTranspose",
@@ -99,3 +109,8 @@ inline std::unique_ptr<format::Processor> create_midi_transpose() {
 }
 
 } // namespace pulp::examples::classic
+
+// Pulls in the inline definition of build_midi_transpose_editor (declared above) so create_view()
+// links in the plugin adapter and the headless tests alike. After the class so
+// the editor header sees a complete definition; its re-include is a no-op.
+#include "midi_transpose_editor.hpp"

@@ -33,12 +33,34 @@ bool bake_mode() {
     return e && *e && std::string(e) != "0";
 }
 
-template <class Proc, class Build>
-void check_editor(Build build, const std::string& name) {
+// Push every parameter to a value far from its default (the far end of its
+// range). Returns true if at least one parameter actually moved — i.e. the
+// editor has a control whose rendered state should now differ from the
+// default-state baseline. Used to prove create_view()'s editor is bound to
+// the store we passed, not rendering a hard-coded default tree.
+bool push_params_off_default(state::StateStore& store) {
+    bool moved = false;
+    for (const auto& info : store.all_params()) {
+        const float def = store.get_default(info.id);
+        const float mid = 0.5f * (info.range.min + info.range.max);
+        const float target = (def <= mid) ? info.range.max : info.range.min;
+        if (target != def) { store.set_value(info.id, target); moved = true; }
+    }
+    return moved;
+}
+
+template <class Proc>
+void check_editor(const std::string& name) {
     Proc proc;
     state::StateStore store;
     proc.define_parameters(store);
-    auto editor = build(store);
+    proc.set_state_store(&store);
+    // Build through the real plugin path: create_view() is what the VST3 / AU /
+    // CLAP / Standalone adapters call to obtain the editor. Asserting it here
+    // proves the wiring; the baseline compare below proves it returns the same
+    // dark Ink & Signal tree the screenshots were baked from.
+    auto editor = proc.create_view();
+    REQUIRE(editor);
     const auto b = editor->bounds();
     const uint32_t w = static_cast<uint32_t>(b.width);
     const uint32_t h = static_cast<uint32_t>(b.height);
@@ -46,11 +68,16 @@ void check_editor(Build build, const std::string& name) {
 
     auto png = view::render_to_png(*editor, w, h, 2.0f, view::ScreenshotBackend::skia);
     if (png.empty()) { SKIP("Skia raster backend unavailable in this build"); }
-    // Relaxed "not blank" floor — some panels (e.g. the param-less MPE Spreader)
-    // are sparse; the baseline comparison below is the real regression guard.
+    // Same "not blank" floor the classic-effects suite uses. The param-less MPE
+    // Spreader panel is sparser, so it gets a slightly relaxed unique-color
+    // floor; the baseline comparison below is the real regression guard either way.
     const auto stats = view::analyze_screenshot_content(png);
-    REQUIRE(stats.valid);
-    REQUIRE(stats.unique_colors >= 4);
+    if (name == "mpe-spreader") {
+        REQUIRE(stats.valid);
+        REQUIRE(stats.unique_colors >= 4);
+    } else {
+        REQUIRE(stats.passes_content_floor(8, 2.0, 0.006, 0.95));
+    }
 
     if (bake_mode()) {
         REQUIRE(view::render_to_file(*editor, w, h, baseline.string(), 2.0f,
@@ -69,13 +96,37 @@ void check_editor(Build build, const std::string& name) {
     REQUIRE(cmp.valid);
     REQUIRE(cmp.passes(0.97f));
     std::error_code ec; fs::remove(tmp, ec);
+
+    // Prove the editor is bound to the store create_view() was given, not
+    // rendering fixed defaults: push every param to the far end of its range,
+    // rebuild via the same create_view() path, and require the render to
+    // visibly diverge from the (default-state) baseline. Plugins with no
+    // editable params (the title-only MPE Spreader) can't diverge and skip this.
+    Proc proc2;
+    state::StateStore store2;
+    proc2.define_parameters(store2);
+    proc2.set_state_store(&store2);
+    if (push_params_off_default(store2)) {
+        auto editor2 = proc2.create_view();
+        REQUIRE(editor2);
+        const auto b2 = editor2->bounds();
+        const auto tmp2 = fs::temp_directory_path() / (name + "-offdefault.png");
+        REQUIRE(view::render_to_file(*editor2, static_cast<uint32_t>(b2.width),
+                                     static_cast<uint32_t>(b2.height), tmp2.string(),
+                                     2.0f, view::ScreenshotBackend::skia));
+        const auto cmp2 = view::compare_screenshot_files(baseline.string(), tmp2.string(), 24);
+        INFO("off-default similarity=" << cmp2.similarity);
+        REQUIRE(cmp2.valid);
+        REQUIRE(cmp2.similarity < 0.999f);
+        fs::remove(tmp2, ec);
+    }
 }
 }  // namespace
 
-TEST_CASE("MIDI Transpose editor matches baseline", "[editor]")      { check_editor<MidiTransposeProcessor>(build_midi_transpose_editor, "midi-transpose"); }
-TEST_CASE("SysEx Echo editor matches baseline", "[editor]")          { check_editor<SysexEchoProcessor>(build_sysex_echo_editor, "sysex-echo"); }
-TEST_CASE("MIDI Inspector editor matches baseline", "[editor]")      { check_editor<MidiInspectorProcessor>(build_midi_inspector_editor, "midi-inspector"); }
-TEST_CASE("MPE Spreader editor matches baseline", "[editor]")        { check_editor<MpeSpreaderProcessor>(build_mpe_spreader_editor, "mpe-spreader"); }
-TEST_CASE("State Memo editor matches baseline", "[editor]")          { check_editor<StateMemoProcessor>(build_state_memo_editor, "state-memo"); }
-TEST_CASE("MonoSynth editor matches baseline", "[editor]")           { check_editor<MonoSynthProcessor>(build_mono_synth_editor, "mono-synth"); }
-TEST_CASE("Synth With Presets editor matches baseline", "[editor]")  { check_editor<SynthWithPresetsProcessor>(build_synth_with_presets_editor, "synth-with-presets"); }
+TEST_CASE("MIDI Transpose editor matches baseline", "[editor]")      { check_editor<MidiTransposeProcessor>("midi-transpose"); }
+TEST_CASE("SysEx Echo editor matches baseline", "[editor]")          { check_editor<SysexEchoProcessor>("sysex-echo"); }
+TEST_CASE("MIDI Inspector editor matches baseline", "[editor]")      { check_editor<MidiInspectorProcessor>("midi-inspector"); }
+TEST_CASE("MPE Spreader editor matches baseline", "[editor]")        { check_editor<MpeSpreaderProcessor>("mpe-spreader"); }
+TEST_CASE("State Memo editor matches baseline", "[editor]")          { check_editor<StateMemoProcessor>("state-memo"); }
+TEST_CASE("MonoSynth editor matches baseline", "[editor]")           { check_editor<MonoSynthProcessor>("mono-synth"); }
+TEST_CASE("Synth With Presets editor matches baseline", "[editor]")  { check_editor<SynthWithPresetsProcessor>("synth-with-presets"); }

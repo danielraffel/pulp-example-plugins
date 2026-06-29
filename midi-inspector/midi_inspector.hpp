@@ -15,6 +15,7 @@
 // faithful sysex echo copies bytes.)
 
 #include <pulp/format/processor.hpp>
+#include <pulp/view/view.hpp>
 #include <pulp/runtime/triple_buffer.hpp>
 
 #include <array>
@@ -29,8 +30,17 @@ enum MidiInspectorParams : state::ParamID {
     kLogOther = 3,  // include pitch-bend / sysex / everything else
 };
 
+// Defined out-of-line in midi_inspector_editor.hpp (included at the bottom of this file).
+// Forward-declared so the editor the screenshot tests render is the same
+// tree the host receives from create_view().
+std::unique_ptr<view::View> build_midi_inspector_editor(state::StateStore& store);
+
 class MidiInspectorProcessor : public format::Processor {
 public:
+    // Hand the host our dark Ink & Signal editor; the framework owns the
+    // returned tree and may call this once per attached editor window.
+    std::unique_ptr<view::View> create_view() override { return build_midi_inspector_editor(state()); }
+
     static constexpr int kRingCapacity = 64;
 
     enum class Kind : uint8_t { note_on, note_off, cc, pitch_bend, sysex, other };
@@ -163,3 +173,8 @@ inline std::unique_ptr<format::Processor> create_midi_inspector() {
 }
 
 } // namespace pulp::examples::classic
+
+// Pulls in the inline definition of build_midi_inspector_editor (declared above) so create_view()
+// links in the plugin adapter and the headless tests alike. After the class so
+// the editor header sees a complete definition; its re-include is a no-op.
+#include "midi_inspector_editor.hpp"

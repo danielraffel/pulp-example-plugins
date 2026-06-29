@@ -2,7 +2,7 @@
 
 if(PULP_BUILD_TESTS)
     add_executable(midi-inspector-test test_midi_inspector.cpp)
-    target_link_libraries(midi-inspector-test PRIVATE pulp::format Catch2::Catch2WithMain)
+    target_link_libraries(midi-inspector-test PRIVATE pulp::format pulp::view Catch2::Catch2WithMain)
     target_include_directories(midi-inspector-test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     catch_discover_tests(midi-inspector-test)
 endif()

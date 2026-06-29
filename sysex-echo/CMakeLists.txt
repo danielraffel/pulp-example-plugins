@@ -2,7 +2,7 @@
 
 if(PULP_BUILD_TESTS)
     add_executable(sysex-echo-test test_sysex_echo.cpp)
-    target_link_libraries(sysex-echo-test PRIVATE pulp::format Catch2::Catch2WithMain)
+    target_link_libraries(sysex-echo-test PRIVATE pulp::format pulp::view Catch2::Catch2WithMain)
     target_include_directories(sysex-echo-test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     catch_discover_tests(sysex-echo-test)
 endif()

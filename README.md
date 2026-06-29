@@ -46,10 +46,17 @@ ctest --test-dir build --output-on-failure
 
 ### Editor screenshots
 
+Each plugin exposes its editor through `Processor::create_view()`, so the dark
+Ink & Signal panel shown below is what loads in any VST3 / AU / CLAP host or the
+standalone app — no extra wiring per format.
+
 The `Editor` column above is rendered from the baselines in `screenshots/`.
-`test_editors.cpp` re-renders each dark Ink & Signal editor with Skia and
-compares it pixel-wise against its committed baseline, so an unintended UI
-change fails CI. After a deliberate editor change, rebake the baselines:
+`test_editors.cpp` builds each editor through `create_view()` (the real host
+path), re-renders it with Skia, and compares it pixel-wise against its committed
+baseline, so an unintended UI change fails CI. For plugins with parameters it
+also pushes every param off its default and asserts the render visibly changes,
+proving the editor is bound to live plugin state. After a deliberate editor
+change, rebake the baselines:
 
 ```bash
 PULP_BAKE_SCREENSHOTS=1 ctest --test-dir build -R editors --output-on-failure

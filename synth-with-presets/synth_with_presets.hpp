@@ -10,6 +10,7 @@
 // primitives (Oscillator + Adsr); clean-room.
 
 #include <pulp/format/processor.hpp>
+#include <pulp/view/view.hpp>
 #include <pulp/signal/adsr.hpp>
 #include <pulp/signal/oscillator.hpp>
 
@@ -30,8 +31,17 @@ enum SynthPresetParams : state::ParamID {
     kSpRelease  = 4,  // seconds
 };
 
+// Defined out-of-line in synth_with_presets_editor.hpp (included at the bottom of this file).
+// Forward-declared so the editor the screenshot tests render is the same
+// tree the host receives from create_view().
+std::unique_ptr<view::View> build_synth_with_presets_editor(state::StateStore& store);
+
 class SynthWithPresetsProcessor : public format::Processor {
 public:
+    // Hand the host our dark Ink & Signal editor; the framework owns the
+    // returned tree and may call this once per attached editor window.
+    std::unique_ptr<view::View> create_view() override { return build_synth_with_presets_editor(state()); }
+
     struct Preset { float waveform, attack, release; };
     static constexpr int kNumPrograms = 3;
     static constexpr std::array<Preset, kNumPrograms> kFactory{{
@@ -182,3 +192,8 @@ inline std::unique_ptr<format::Processor> create_synth_with_presets() {
 }
 
 } // namespace pulp::examples::classic
+
+// Pulls in the inline definition of build_synth_with_presets_editor (declared above) so create_view()
+// links in the plugin adapter and the headless tests alike. After the class so
+// the editor header sees a complete definition; its re-include is a no-op.
+#include "synth_with_presets_editor.hpp"

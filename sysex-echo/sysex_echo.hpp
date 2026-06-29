@@ -12,6 +12,7 @@
 // reserve a payload pool and use add_sysex_copy() under set_realtime_capacity_limit.
 
 #include <pulp/format/processor.hpp>
+#include <pulp/view/view.hpp>
 
 #include <cstdint>
 #include <memory>
@@ -23,8 +24,17 @@ enum SysexEchoParams : state::ParamID {
     kEchoEnabled = 1,  // 0 = drop SysEx, 1 = echo it to the output
 };
 
+// Defined out-of-line in sysex_echo_editor.hpp (included at the bottom of this file).
+// Forward-declared so the editor the screenshot tests render is the same
+// tree the host receives from create_view().
+std::unique_ptr<view::View> build_sysex_echo_editor(state::StateStore& store);
+
 class SysexEchoProcessor : public format::Processor {
 public:
+    // Hand the host our dark Ink & Signal editor; the framework owns the
+    // returned tree and may call this once per attached editor window.
+    std::unique_ptr<view::View> create_view() override { return build_sysex_echo_editor(state()); }
+
     format::PluginDescriptor descriptor() const override {
         return {
             .name = "SysExEcho",
@@ -82,3 +92,8 @@ inline std::unique_ptr<format::Processor> create_sysex_echo() {
 }
 
 } // namespace pulp::examples::classic
+
+// Pulls in the inline definition of build_sysex_echo_editor (declared above) so create_view()
+// links in the plugin adapter and the headless tests alike. After the class so
+// the editor header sees a complete definition; its re-include is a no-op.
+#include "sysex_echo_editor.hpp"

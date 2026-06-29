@@ -2,7 +2,7 @@
 
 if(PULP_BUILD_TESTS)
     add_executable(mpe-spreader-test test_mpe_spreader.cpp)
-    target_link_libraries(mpe-spreader-test PRIVATE pulp::format Catch2::Catch2WithMain)
+    target_link_libraries(mpe-spreader-test PRIVATE pulp::format pulp::view Catch2::Catch2WithMain)
     target_include_directories(mpe-spreader-test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     catch_discover_tests(mpe-spreader-test)
 endif()
