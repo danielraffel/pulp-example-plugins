@@ -17,6 +17,7 @@ enable_testing()
 
 add_subdirectory(midi-transpose)
 add_subdirectory(sysex-echo)
+add_subdirectory(midi-inspector)
 add_subdirectory(state-memo)
 add_subdirectory(mpe-spreader)
 add_subdirectory(mono-synth)

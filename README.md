@@ -15,6 +15,7 @@ pure MIDI utility, a minimal instrument, and a UI fixture.
 |---|---|---|---|
 | MIDI Transpose | ✅ | ✅ | Pure MIDI effect — semitone note shifter, passes CC/bend/SysEx through |
 | SysEx Echo | ✅ | ✅ | MIDI effect — round-trips System Exclusive payloads (echo on/off) |
+| MIDI Inspector | ✅ | ✅ | MIDI pass-through that logs events (counts, ring, filters, dropped) via TripleBuffer |
 | State Memo | ✅ | ✅ | Custom plugin state (a free-text memo) beyond automatable params; fail-safe (de)serialize |
 | MPE Spreader | ✅ | ✅ | MIDI effect — gives every held note its own MPE member channel (note-off integrity, recycle) |
 | MonoSynth | ✅ | ✅ | Minimal monophonic instrument (oscillator + ADSR), MIDI in → audio out |
