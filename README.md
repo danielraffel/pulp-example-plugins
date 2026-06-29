@@ -14,6 +14,7 @@ pure MIDI utility, a minimal instrument, and a UI fixture.
 | Example | DSP | Test | Notes |
 |---|---|---|---|
 | MIDI Transpose | ✅ | ✅ | Pure MIDI effect — semitone note shifter, passes CC/bend/SysEx through |
+| SysEx Echo | ✅ | ✅ | MIDI effect — round-trips System Exclusive payloads (echo on/off) |
 | MonoSynth | ✅ | ✅ | Minimal monophonic instrument (oscillator + ADSR), MIDI in → audio out |
 | gui-zoo | ✅ | ✅ | UI fixture — widgets/layout/Skia paint with a deterministic screenshot baseline |
 
