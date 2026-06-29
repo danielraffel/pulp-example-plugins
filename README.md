@@ -11,16 +11,16 @@ pure MIDI utility, a minimal instrument, and a UI fixture.
 
 ## Status
 
-| Example | DSP | Test | Notes |
-|---|---|---|---|
-| MIDI Transpose | ✅ | ✅ | Pure MIDI effect — semitone note shifter, passes CC/bend/SysEx through |
-| SysEx Echo | ✅ | ✅ | MIDI effect — round-trips System Exclusive payloads (echo on/off) |
-| MIDI Inspector | ✅ | ✅ | MIDI pass-through that logs events (counts, ring, filters, dropped) via TripleBuffer |
-| State Memo | ✅ | ✅ | Custom plugin state (a free-text memo) beyond automatable params; fail-safe (de)serialize |
-| MPE Spreader | ✅ | ✅ | MIDI effect — gives every held note its own MPE member channel (note-off integrity, recycle) |
-| MonoSynth | ✅ | ✅ | Minimal monophonic instrument (oscillator + ADSR), MIDI in → audio out |
-| Synth With Presets | ✅ | ✅ | Instrument + factory preset bank, pitch bend & mod-wheel vibrato; clean recall semantics |
-| gui-zoo | ✅ | ✅ | UI fixture — widgets/layout/Skia paint with a deterministic screenshot baseline |
+| Example | Editor | DSP | Test | Notes |
+|---|---|---|---|---|
+| MIDI Transpose | <img src="screenshots/midi-transpose.png" width="220"> | ✅ | ✅ | Pure MIDI effect — semitone note shifter, passes CC/bend/SysEx through |
+| SysEx Echo | <img src="screenshots/sysex-echo.png" width="220"> | ✅ | ✅ | MIDI effect — round-trips System Exclusive payloads (echo on/off) |
+| MIDI Inspector | <img src="screenshots/midi-inspector.png" width="220"> | ✅ | ✅ | MIDI pass-through that logs events (counts, ring, filters, dropped) via TripleBuffer |
+| State Memo | <img src="screenshots/state-memo.png" width="220"> | ✅ | ✅ | Custom plugin state (a free-text memo) beyond automatable params; fail-safe (de)serialize |
+| MPE Spreader | <img src="screenshots/mpe-spreader.png" width="220"> | ✅ | ✅ | MIDI effect — gives every held note its own MPE member channel (note-off integrity, recycle) |
+| MonoSynth | <img src="screenshots/mono-synth.png" width="220"> | ✅ | ✅ | Minimal monophonic instrument (oscillator + ADSR), MIDI in → audio out |
+| Synth With Presets | <img src="screenshots/synth-with-presets.png" width="220"> | ✅ | ✅ | Instrument + factory preset bank, pitch bend & mod-wheel vibrato; clean recall semantics |
+| gui-zoo | <img src="gui-zoo/baseline.png" width="220"> | ✅ | ✅ | UI fixture — widgets/layout/Skia paint with a deterministic screenshot baseline |
 
 ## Credits
 

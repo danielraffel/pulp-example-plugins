@@ -23,3 +23,22 @@ add_subdirectory(mpe-spreader)
 add_subdirectory(mono-synth)
 add_subdirectory(synth-with-presets)
 add_subdirectory(gui-zoo)
+
+# Combined render check for every plugin's dark Ink & Signal editor. Needs
+# pulp::view (Ink & Signal theme + Skia screenshot); skips at runtime when the
+# Skia raster backend isn't compiled into the SDK build.
+if(PULP_BUILD_TESTS AND TARGET pulp::view)
+    add_executable(editors-test test_editors.cpp)
+    target_link_libraries(editors-test
+        PRIVATE pulp::format pulp::signal pulp::view Catch2::Catch2WithMain)
+    target_include_directories(editors-test PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/midi-transpose
+        ${CMAKE_CURRENT_SOURCE_DIR}/sysex-echo
+        ${CMAKE_CURRENT_SOURCE_DIR}/midi-inspector
+        ${CMAKE_CURRENT_SOURCE_DIR}/mpe-spreader
+        ${CMAKE_CURRENT_SOURCE_DIR}/state-memo
+        ${CMAKE_CURRENT_SOURCE_DIR}/mono-synth
+        ${CMAKE_CURRENT_SOURCE_DIR}/synth-with-presets)
+    catch_discover_tests(editors-test)
+endif()
