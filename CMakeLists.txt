@@ -17,5 +17,6 @@ enable_testing()
 
 add_subdirectory(midi-transpose)
 add_subdirectory(sysex-echo)
+add_subdirectory(state-memo)
 add_subdirectory(mono-synth)
 add_subdirectory(gui-zoo)
