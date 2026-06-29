@@ -45,7 +45,7 @@ TEST_CASE("MonoSynth is an instrument that accepts MIDI", "[mono-synth]") {
     auto d = host.descriptor();
     REQUIRE(d.category == format::PluginCategory::Instrument);
     REQUIRE(d.accepts_midi);
-    REQUIRE(host.state().param_count() == 5);
+    REQUIRE(host.state().param_count() == 6);
 }
 
 TEST_CASE("MonoSynth is silent before any note", "[mono-synth]") {

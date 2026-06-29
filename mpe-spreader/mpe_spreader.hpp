@@ -25,6 +25,11 @@
 
 namespace pulp::examples::classic {
 
+enum MpeSpreaderParams : state::ParamID {
+    kMembers   = 1,  // how many member channels to spread across (1..15)
+    kMpeBypass = 2,  // pass MIDI through unspread
+};
+
 // Defined out-of-line in mpe_spreader_editor.hpp (included at the bottom of this file).
 // Forward-declared so the editor the screenshot tests render is the same
 // tree the host receives from create_view().
@@ -53,7 +58,12 @@ public:
         };
     }
 
-    void define_parameters(state::StateStore&) override {}
+    void define_parameters(state::StateStore& store) override {
+        store.add_parameter({.id = kMembers, .name = "Members", .unit = "",
+                             .range = {1.0f, 15.0f, 15.0f, 1.0f}});  // stepped 1..15
+        store.add_parameter({.id = kMpeBypass, .name = "Bypass", .unit = "",
+                             .range = {0.0f, 1.0f, 0.0f, 1.0f}});
+    }
 
     void prepare(const format::PrepareContext&) override { reset_state(); }
 
@@ -72,6 +82,20 @@ public:
         }
         if (ctx.should_reset_dsp_state()) reset_state();
 
+        // Bypass: pass all MIDI through unspread (notes keep their input channel).
+        if (state().get_value(kMpeBypass) >= 0.5f) {
+            for (const auto& ev : midi_in) midi_out.add(ev);
+            for (const auto& sx : midi_in.sysex())
+                midi_out.add_sysex_copy(sx.data.data(), sx.data.size(),
+                                        sx.sample_offset, sx.timestamp);
+            return;
+        }
+
+        // The member pool is the first `Members` channels of the Lower Zone.
+        const int members = std::clamp(
+            static_cast<int>(state().get_value(kMembers) + 0.5f), 1, 16 - kFirstMember);
+        const int last_member = std::min(kFirstMember + members - 1, kLastMember);
+
         for (const auto& ev : midi_in) {
             const bool real_on = ev.is_note_on() && ev.velocity() > 0;
             const bool real_off =
@@ -81,7 +105,7 @@ public:
                 const uint8_t note = ev.note();
                 int ch = note_channel_[note];
                 if (ch < 0) {                       // assign a fresh channel
-                    ch = allocate_member();
+                    ch = allocate_member(last_member);
                     note_channel_[note] = static_cast<int8_t>(ch);
                     if (ch >= kFirstMember) member_used_[ch] = true;
                 }
@@ -109,10 +133,11 @@ private:
         e.sample_offset = src.sample_offset;
         out.add(e);
     }
-    // Lowest free member channel; falls back to the master channel (0) when the
-    // zone is exhausted so the note still sounds (just without isolation).
-    int allocate_member() {
-        for (int c = kFirstMember; c <= kLastMember; ++c)
+    // Lowest free member channel within the active pool [kFirstMember, last];
+    // falls back to the master channel (0) when the pool is exhausted so the
+    // note still sounds (just without isolation).
+    int allocate_member(int last) {
+        for (int c = kFirstMember; c <= last; ++c)
             if (!member_used_[c]) return c;
         return 0;
     }

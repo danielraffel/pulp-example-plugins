@@ -130,3 +130,4 @@ TEST_CASE("MPE Spreader editor matches baseline", "[editor]")        { check_edi
 TEST_CASE("State Memo editor matches baseline", "[editor]")          { check_editor<StateMemoProcessor>("state-memo"); }
 TEST_CASE("MonoSynth editor matches baseline", "[editor]")           { check_editor<MonoSynthProcessor>("mono-synth"); }
 TEST_CASE("Synth With Presets editor matches baseline", "[editor]")  { check_editor<SynthWithPresetsProcessor>("synth-with-presets"); }
+TEST_CASE("Gain editor matches baseline", "[editor]")                { check_editor<GainProcessor>("gain"); }

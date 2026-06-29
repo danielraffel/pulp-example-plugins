@@ -22,6 +22,7 @@ add_subdirectory(state-memo)
 add_subdirectory(mpe-spreader)
 add_subdirectory(mono-synth)
 add_subdirectory(synth-with-presets)
+add_subdirectory(gain)
 add_subdirectory(gui-zoo)
 
 # Combined render check for every plugin's dark Ink & Signal editor. Needs
@@ -39,7 +40,8 @@ if(PULP_BUILD_TESTS AND TARGET pulp::view)
         ${CMAKE_CURRENT_SOURCE_DIR}/mpe-spreader
         ${CMAKE_CURRENT_SOURCE_DIR}/state-memo
         ${CMAKE_CURRENT_SOURCE_DIR}/mono-synth
-        ${CMAKE_CURRENT_SOURCE_DIR}/synth-with-presets)
+        ${CMAKE_CURRENT_SOURCE_DIR}/synth-with-presets
+        ${CMAKE_CURRENT_SOURCE_DIR}/gain)
     target_compile_definitions(editors-test PRIVATE
         SCREENSHOTS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/screenshots")
     catch_discover_tests(editors-test)

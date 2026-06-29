@@ -10,3 +10,4 @@
 #include "state-memo/state_memo_editor.hpp"
 #include "mono-synth/mono_synth_editor.hpp"
 #include "synth-with-presets/synth_with_presets_editor.hpp"
+#include "gain/gain_editor.hpp"

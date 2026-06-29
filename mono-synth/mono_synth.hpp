@@ -26,6 +26,7 @@ enum MonoSynthParams : state::ParamID {
     kDecay    = 3,
     kSustain  = 4,  // 0..1
     kRelease  = 5,
+    kVolume   = 6,  // output gain 0..1
 };
 
 // Defined out-of-line in mono_synth_editor.hpp (included at the bottom of this file).
@@ -68,6 +69,8 @@ public:
                              .range = {0.0f, 1.0f, 0.7f, 0.0f}});
         store.add_parameter({.id = kRelease, .name = "Release", .unit = "s",
                              .range = {0.001f, 3.0f, 0.2f, 0.0f}});
+        store.add_parameter({.id = kVolume, .name = "Volume", .unit = "",
+                             .range = {0.0f, 1.0f, 0.8f, 0.0f}});
     }
 
     void prepare(const format::PrepareContext& ctx) override {
@@ -94,6 +97,7 @@ public:
         env_.set_params({state().get_value(kAttack), state().get_value(kDecay),
                          std::clamp(state().get_value(kSustain), 0.0f, 1.0f),
                          state().get_value(kRelease)});
+        const float volume = std::clamp(state().get_value(kVolume), 0.0f, 1.0f);
 
         const std::size_t frames = output.num_samples();
         // Sort by sample offset ourselves — HeadlessHost (and not every adapter)
@@ -110,7 +114,7 @@ public:
                 apply_event(midi_in[event]);
                 ++event;
             }
-            const float s = osc_.next() * env_.next() * velocity_gain_;
+            const float s = osc_.next() * env_.next() * velocity_gain_ * volume;
             for (std::size_t ch = 0; ch < output.num_channels(); ++ch) {
                 output.channel(ch)[i] = s;
             }

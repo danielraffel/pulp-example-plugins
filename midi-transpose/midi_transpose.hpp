@@ -19,6 +19,7 @@ namespace pulp::examples::classic {
 
 enum MidiTransposeParams : state::ParamID {
     kSemitones = 1,  // -24 .. +24
+    kOctave    = 2,  // -3 .. +3 (added to the semitone shift, ×12)
 };
 
 // Defined out-of-line in midi_transpose_editor.hpp (included at the bottom of this file).
@@ -53,6 +54,12 @@ public:
             .unit = "st",
             .range = {-24.0f, 24.0f, 0.0f, 1.0f},  // stepped, integer semitones
         });
+        store.add_parameter({
+            .id = kOctave,
+            .name = "Octave",
+            .unit = "oct",
+            .range = {-3.0f, 3.0f, 0.0f, 1.0f},  // stepped, integer octaves
+        });
     }
 
     void prepare(const format::PrepareContext&) override {}
@@ -70,7 +77,9 @@ public:
             for (std::size_t i = 0; i < out.size(); ++i) out[i] = in[i];
         }
 
-        const int offset = static_cast<int>(state().get_value(kSemitones));
+        // Total shift combines the semitone offset with whole-octave steps.
+        const int offset = static_cast<int>(state().get_value(kSemitones))
+                         + 12 * static_cast<int>(state().get_value(kOctave));
 
         for (const auto& ev : midi_in) {
             if ((ev.is_note_on() || ev.is_note_off()) && offset != 0) {

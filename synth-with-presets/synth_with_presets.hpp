@@ -29,6 +29,8 @@ enum SynthPresetParams : state::ParamID {
     kSpWaveform = 2,  // 0 sine, 1 saw, 2 square, 3 triangle
     kSpAttack   = 3,  // seconds
     kSpRelease  = 4,  // seconds
+    kSpDecay    = 5,  // seconds
+    kSpSustain  = 6,  // level 0..1
 };
 
 // Defined out-of-line in synth_with_presets_editor.hpp (included at the bottom of this file).
@@ -42,13 +44,16 @@ public:
     // returned tree and may call this once per attached editor window.
     std::unique_ptr<view::View> create_view() override { return build_synth_with_presets_editor(state()); }
 
-    struct Preset { float waveform, attack, release; };
+    struct Preset { float waveform, attack, decay, sustain, release; };
     static constexpr int kNumPrograms = 3;
     static constexpr std::array<Preset, kNumPrograms> kFactory{{
-        {1.0f, 0.005f, 0.20f},   // 0: "Pluck"  — saw, fast attack, short tail
-        {2.0f, 0.30f,  0.80f},   // 1: "Pad"    — square, slow attack, long tail
-        {0.0f, 0.02f,  0.40f},   // 2: "Sine"   — sine, med
+        {1.0f, 0.005f, 0.08f, 0.60f, 0.20f},  // 0: "Pluck" — saw, fast attack, short tail
+        {2.0f, 0.30f,  0.40f, 0.90f, 0.80f},  // 1: "Pad"   — square, slow attack, long tail
+        {0.0f, 0.02f,  0.15f, 0.80f, 0.40f},  // 2: "Sine"  — sine, med
     }};
+    // Human-readable program names, surfaced in the editor's Program combo.
+    static constexpr std::array<const char*, kNumPrograms> kProgramNames{
+        {"Pluck", "Pad", "Sine"}};
 
     format::PluginDescriptor descriptor() const override {
         return {.name = "SynthPresets", .manufacturer = "Pulp Examples",
@@ -67,6 +72,10 @@ public:
                              .range = {0.001f, 2.0f, 0.005f, 0.0f}});
         store.add_parameter({.id = kSpRelease, .name = "Release", .unit = "s",
                              .range = {0.001f, 3.0f, 0.20f, 0.0f}});
+        store.add_parameter({.id = kSpDecay, .name = "Decay", .unit = "s",
+                             .range = {0.001f, 2.0f, 0.15f, 0.0f}});
+        store.add_parameter({.id = kSpSustain, .name = "Sustain", .unit = "",
+                             .range = {0.0f, 1.0f, 0.80f, 0.0f}});
     }
 
     void prepare(const format::PrepareContext& ctx) override {
@@ -88,6 +97,8 @@ public:
         const Preset& p = kFactory[static_cast<std::size_t>(program)];
         state().set_value(kSpWaveform, p.waveform);
         state().set_value(kSpAttack, p.attack);
+        state().set_value(kSpDecay, p.decay);
+        state().set_value(kSpSustain, p.sustain);
         state().set_value(kSpRelease, p.release);
         last_program_ = program;
     }
@@ -102,7 +113,8 @@ public:
         if (program != last_program_) apply_program(program);
 
         osc_.set_waveform(waveform_from_param(state().get_value(kSpWaveform)));
-        env_.set_params({state().get_value(kSpAttack), 0.05f, 0.8f,
+        env_.set_params({state().get_value(kSpAttack), state().get_value(kSpDecay),
+                         std::clamp(state().get_value(kSpSustain), 0.0f, 1.0f),
                          state().get_value(kSpRelease)});
 
         const std::size_t frames = output.num_samples();

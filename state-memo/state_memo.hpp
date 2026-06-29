@@ -14,6 +14,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <span>
 #include <string>
@@ -27,14 +28,23 @@ enum StateMemoParams : state::ParamID {
 
 // Defined out-of-line in state_memo_editor.hpp (included at the bottom of this file).
 // Forward-declared so the editor the screenshot tests render is the same
-// tree the host receives from create_view().
-std::unique_ptr<view::View> build_state_memo_editor(state::StateStore& store);
+// tree the host receives from create_view(). The memo callbacks reach the
+// plugin's non-parameter string state.
+std::unique_ptr<view::View> build_state_memo_editor(
+    state::StateStore& store,
+    std::function<std::string()> get_memo,
+    std::function<void(const std::string&)> set_memo);
 
 class StateMemoProcessor : public format::Processor {
 public:
     // Hand the host our dark Ink & Signal editor; the framework owns the
     // returned tree and may call this once per attached editor window.
-    std::unique_ptr<view::View> create_view() override { return build_state_memo_editor(state()); }
+    std::unique_ptr<view::View> create_view() override {
+        return build_state_memo_editor(
+            state(),
+            [this] { return memo(); },
+            [this](const std::string& s) { set_memo(s); });
+    }
 
     static constexpr uint32_t kSchemaVersion = 1;
     static constexpr uint32_t kMaxMemoBytes = 4096;  // bound untrusted input

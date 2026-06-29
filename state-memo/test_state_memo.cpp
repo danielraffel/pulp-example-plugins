@@ -3,6 +3,9 @@
 #include "state_memo.hpp"
 
 #include <pulp/format/headless.hpp>
+#include <pulp/state/store.hpp>
+#include <pulp/view/input_events.hpp>
+#include <pulp/view/text_editor.hpp>
 
 #include <cstdint>
 #include <span>
@@ -17,6 +20,14 @@ using pulp::examples::classic::kGain;
 namespace {
 std::span<const uint8_t> as_span(const std::vector<uint8_t>& v) {
     return std::span<const uint8_t>(v.data(), v.size());
+}
+
+// Depth-first find the first TextEditor in a view tree.
+view::TextEditor* find_text_editor(view::View* v) {
+    if (auto* te = dynamic_cast<view::TextEditor*>(v)) return te;
+    for (std::size_t i = 0; i < v->child_count(); ++i)
+        if (auto* found = find_text_editor(v->child_at(i))) return found;
+    return nullptr;
 }
 }
 
@@ -119,6 +130,30 @@ TEST_CASE("StateMemo clamps an over-long memo on set", "[state-memo]") {
 // NOTE: an end-to-end check that the memo survives host save_state()/load_state()
 // needs HeadlessHost::processor_as<T>() to read it back; that accessor is landing
 // separately. The parameter path through the host is covered below.
+// The memo is non-parameter state, so its editor can't ride the StateStore
+// binding path the other plugins use; create_view() wires a TextEditor straight
+// to set_memo()/memo(). Prove that real user path: the field seeds from the
+// current memo, and typing into it propagates the whole buffer back.
+TEST_CASE("StateMemo editor binds its TextEditor to the memo both ways", "[state-memo]") {
+    StateMemoProcessor proc;
+    state::StateStore store;
+    proc.define_parameters(store);
+    proc.set_state_store(&store);
+    proc.set_memo("seed note");
+
+    auto editor_view = proc.create_view();
+    REQUIRE(editor_view);
+    auto* field = find_text_editor(editor_view.get());
+    REQUIRE(field != nullptr);
+    REQUIRE(field->text() == "seed note");          // seeded from memo() on build
+
+    field->on_focus_changed(true);
+    view::TextInputEvent te; te.text = "X";
+    field->on_text_input(te);
+    REQUIRE(field->text() != "seed note");           // the edit landed
+    REQUIRE(proc.memo() == field->text());           // and on_change pushed it to the plugin
+}
+
 TEST_CASE("StateMemo gain parameter round-trips through host save/load", "[state-memo]") {
     format::HeadlessHost host(create_state_memo);
     host.prepare(48000.0, 64);
