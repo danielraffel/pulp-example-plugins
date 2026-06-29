@@ -43,3 +43,18 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
 cmake --build build -j
 ctest --test-dir build --output-on-failure
 ```
+
+### Editor screenshots
+
+The `Editor` column above is rendered from the baselines in `screenshots/`.
+`test_editors.cpp` re-renders each dark Ink & Signal editor with Skia and
+compares it pixel-wise against its committed baseline, so an unintended UI
+change fails CI. After a deliberate editor change, rebake the baselines:
+
+```bash
+PULP_BAKE_SCREENSHOTS=1 ctest --test-dir build -R editors --output-on-failure
+git add screenshots && git commit -m "chore: rebake editor screenshots"
+```
+
+The test skips cleanly when the SDK build has no Skia raster backend.
+(gui-zoo keeps its own fixture test + `gui-zoo/baseline.png`.)

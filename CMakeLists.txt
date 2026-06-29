@@ -40,5 +40,7 @@ if(PULP_BUILD_TESTS AND TARGET pulp::view)
         ${CMAKE_CURRENT_SOURCE_DIR}/state-memo
         ${CMAKE_CURRENT_SOURCE_DIR}/mono-synth
         ${CMAKE_CURRENT_SOURCE_DIR}/synth-with-presets)
+    target_compile_definitions(editors-test PRIVATE
+        SCREENSHOTS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/screenshots")
     catch_discover_tests(editors-test)
 endif()
