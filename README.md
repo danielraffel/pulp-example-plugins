@@ -18,6 +18,7 @@ pure MIDI utility, a minimal instrument, and a UI fixture.
 | State Memo | ✅ | ✅ | Custom plugin state (a free-text memo) beyond automatable params; fail-safe (de)serialize |
 | MPE Spreader | ✅ | ✅ | MIDI effect — gives every held note its own MPE member channel (note-off integrity, recycle) |
 | MonoSynth | ✅ | ✅ | Minimal monophonic instrument (oscillator + ADSR), MIDI in → audio out |
+| Synth With Presets | ✅ | ✅ | Instrument + factory preset bank, pitch bend & mod-wheel vibrato; clean recall semantics |
 | gui-zoo | ✅ | ✅ | UI fixture — widgets/layout/Skia paint with a deterministic screenshot baseline |
 
 ## Credits
