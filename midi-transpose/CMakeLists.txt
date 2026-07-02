@@ -9,7 +9,7 @@ endif()
 
 # A pure MIDI effect — CLAP carries MIDI cleanly; standalone for quick checks.
 pulp_add_plugin(MidiTranspose
-    FORMATS           CLAP Standalone
+    FORMATS           VST3 CLAP AU Standalone
     PLUGIN_NAME       "MidiTranspose"
     BUNDLE_ID         "com.pulp.examples.midi-transpose"
     MANUFACTURER      "Pulp Examples"

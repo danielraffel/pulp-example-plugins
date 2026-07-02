@@ -8,7 +8,7 @@ if(PULP_BUILD_TESTS)
 endif()
 
 pulp_add_plugin(MonoSynth
-    FORMATS           CLAP Standalone
+    FORMATS           VST3 CLAP AU Standalone
     PLUGIN_NAME       "MonoSynth"
     BUNDLE_ID         "com.pulp.examples.mono-synth"
     MANUFACTURER      "Pulp Examples"

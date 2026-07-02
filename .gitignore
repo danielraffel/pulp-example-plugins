@@ -5,3 +5,7 @@ build-*/
 *.o
 *.a
 compile_commands.json
+
+# Build + packaging outputs
+artifacts/
+build/

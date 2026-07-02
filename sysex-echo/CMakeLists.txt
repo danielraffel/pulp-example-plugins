@@ -9,7 +9,7 @@ endif()
 
 # A pure MIDI effect — CLAP carries SysEx cleanly; standalone for quick checks.
 pulp_add_plugin(SysexEcho
-    FORMATS           CLAP Standalone
+    FORMATS           VST3 CLAP AU Standalone
     PLUGIN_NAME       "SysExEcho"
     BUNDLE_ID         "com.pulp.examples.sysex-echo"
     MANUFACTURER      "Pulp Examples"

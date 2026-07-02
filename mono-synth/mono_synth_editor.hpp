@@ -13,6 +13,6 @@ inline std::unique_ptr<view::View> build_mono_synth_editor(state::StateStore& st
                      {kSustain, "Sustain", Control::Kind::Knob, {}},
                      {kRelease, "Release", Control::Kind::Knob, {}},
                      {kVolume, "Volume", Control::Kind::Knob, {}}},
-        .bypass_id = 0, .has_bypass = false});
+        .bypass_id = 0, .has_bypass = false, .grid_cols = 4});
 }
 }

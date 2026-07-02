@@ -9,7 +9,7 @@ endif()
 
 # A pure MIDI effect — CLAP carries per-channel MIDI cleanly.
 pulp_add_plugin(MpeSpreader
-    FORMATS           CLAP Standalone
+    FORMATS           VST3 CLAP AU Standalone
     PLUGIN_NAME       "MpeSpreader"
     BUNDLE_ID         "com.pulp.examples.mpe-spreader"
     MANUFACTURER      "Pulp Examples"
