@@ -8,7 +8,7 @@ if(PULP_BUILD_TESTS)
 endif()
 
 pulp_add_plugin(Gain
-    FORMATS           VST3 CLAP Standalone
+    FORMATS           VST3 CLAP AU Standalone
     PLUGIN_NAME       "Gain"
     BUNDLE_ID         "com.pulp.examples.gain"
     MANUFACTURER      "Pulp Examples"

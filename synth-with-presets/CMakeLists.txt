@@ -8,7 +8,7 @@ if(PULP_BUILD_TESTS)
 endif()
 
 pulp_add_plugin(SynthWithPresets
-    FORMATS           CLAP Standalone
+    FORMATS           VST3 CLAP AU Standalone
     PLUGIN_NAME       "SynthPresets"
     BUNDLE_ID         "com.pulp.examples.synth-with-presets"
     MANUFACTURER      "Pulp Examples"
