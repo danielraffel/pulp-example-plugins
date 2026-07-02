@@ -17,6 +17,6 @@ inline std::unique_ptr<view::View> build_synth_with_presets_editor(state::StateS
                      {kSpDecay, "Decay", Control::Kind::Knob, {}},
                      {kSpSustain, "Sustain", Control::Kind::Knob, {}},
                      {kSpRelease, "Release", Control::Kind::Knob, {}}},
-        .bypass_id = 0, .has_bypass = false});
+        .bypass_id = 0, .has_bypass = false, .grid_cols = 4});
 }
 }
