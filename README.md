@@ -21,7 +21,7 @@ pure MIDI utility, a minimal instrument, and a UI fixture.
 | MonoSynth | <img src="screenshots/mono-synth.png" width="220"> | Minimal monophonic instrument (oscillator + ADSR), MIDI in → audio out |
 | Synth With Presets | <img src="screenshots/synth-with-presets.png" width="220"> | Instrument + factory preset bank, pitch bend & mod-wheel vibrato; clean recall semantics |
 | Gain | <img src="screenshots/gain.png" width="220"> | Plain utility effect — linear gain (fader) + equal-power pan (knob); stereo in → out |
-| gui-zoo | <img src="gui-zoo/baseline.png" width="220"> | UI fixture — widgets/layout/Skia paint with a deterministic screenshot baseline |
+| gui-zoo | <img src="gui-zoo/baseline.png" width="220"> | Installable widget-gallery plugin — a zero-DSP pass-through effect whose editor scrolls the full Ink & Signal widget board; also a deterministic screenshot fixture |
 
 ## Credits
 
