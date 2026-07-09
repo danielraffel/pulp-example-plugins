@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <array>
+#include <string>
 #include <cmath>
 #include <cstdint>
 #include <memory>
@@ -75,10 +76,20 @@ public:
     }
 
     void define_parameters(state::StateStore& store) override {
+        // to_string names each discrete value. The editor's combos read these,
+        // and a headless web build surfaces them through wam_parameters() as
+        // "labels", so a generated browser control shows Pluck/Pad/Sine and
+        // Sine/Saw/Square/Triangle rather than bare integer sliders.
         store.add_parameter({.id = kSpProgram, .name = "Program", .unit = "",
-                             .range = {0.0f, float(kNumPrograms - 1), 0.0f, 1.0f}});
+                             .range = {0.0f, float(kNumPrograms - 1), 0.0f, 1.0f},
+                             .to_string = [](float v) {
+                                 return std::string(program_name(v));
+                             }});
         store.add_parameter({.id = kSpWaveform, .name = "Waveform", .unit = "",
-                             .range = {0.0f, 3.0f, 1.0f, 1.0f}});
+                             .range = {0.0f, 3.0f, 1.0f, 1.0f},
+                             .to_string = [](float v) {
+                                 return std::string(waveform_name(v));
+                             }});
         store.add_parameter({.id = kSpAttack, .name = "Attack", .unit = "s",
                              .range = {0.001f, 2.0f, 0.005f, 0.0f}});
         store.add_parameter({.id = kSpRelease, .name = "Release", .unit = "s",
@@ -195,8 +206,27 @@ private:
     static float note_to_hz(int note) {
         return 440.0f * std::pow(2.0f, (note - 69) / 12.0f);
     }
+    // One place decides what a discrete value means; the name and the
+    // oscillator setting are both derived from it, so they cannot drift.
+    static int waveform_index(float v) { return static_cast<int>(v + 0.5f); }
+
+    static const char* waveform_name(float v) {
+        switch (waveform_index(v)) {
+            case 0:  return "Sine";
+            case 2:  return "Square";
+            case 3:  return "Triangle";
+            default: return "Saw";
+        }
+    }
+
+    static const char* program_name(float v) {
+        const int i = static_cast<int>(v + 0.5f);
+        return (i >= 0 && i < kNumPrograms) ? kProgramNames[std::size_t(i)]
+                                            : kProgramNames[0];
+    }
+
     static signal::Oscillator::Waveform waveform_from_param(float v) {
-        switch (static_cast<int>(v + 0.5f)) {
+        switch (waveform_index(v)) {
             case 0:  return signal::Oscillator::Waveform::sine;
             case 2:  return signal::Oscillator::Waveform::square;
             case 3:  return signal::Oscillator::Waveform::triangle;
