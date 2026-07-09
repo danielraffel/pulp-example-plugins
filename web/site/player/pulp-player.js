@@ -831,7 +831,7 @@ export async function mountDemo(opts) {
           { dsp: opts.synthUrls.dsp, processor: opts.synthUrls.processor });
         if (!S.analyser) {
           S.analyser = S.ctx.createAnalyser(); S.analyser.fftSize = 4096;   // capture window > SCOPE_DRAW so the trigger has slack
-          S.analyser.connect(S.ctx.destination);
+          connectOutput(S);
         }
       }
       S.synth.audioNode.connect(S.analyser);
@@ -955,14 +955,49 @@ export async function mountDemo(opts) {
       if (opts.midiViz !== "sysex") { installKeyboardHandlers(); renderKeyboard(); }
     }
   }
+
+// Output safety. A demo page must never be able to hurt someone wearing
+// headphones. Nothing here is a claim about the DSP — the analyser taps the
+// plugin's RAW output, so the scope and meter still show exactly what the
+// plugin produced, clipping included. The limiter sits AFTER the tap, purely
+// between the page and the speakers.
+//
+// This is not hypothetical: `wah` ships a +20 dB default Gain on a resonant
+// filter (Gain default 20, range 0..20 dB; Q default 10) and peaks around 8.7
+// through a backing loop — roughly +19 dBFS.
+//
+// A DynamicsCompressorNode with a high ratio, a low knee and a 0 dB-ish
+// threshold is Web Audio's only built-in limiter. It is not transparent, but
+// it only engages above -1 dBFS, which nothing well-behaved reaches.
+function createSafetyLimiter(ctx) {
+  const limiter = ctx.createDynamicsCompressor();
+  limiter.threshold.value = -1;    // dBFS — engage only when we're about to clip
+  limiter.knee.value = 0;          // hard
+  limiter.ratio.value = 20;        // effectively a brickwall
+  limiter.attack.value = 0.001;
+  limiter.release.value = 0.05;
+  return limiter;
+}
+
+// Connect the analyser tap to the speakers through the limiter. Idempotent:
+// the chain demos call this again when a synth is added late.
+function connectOutput(S) {
+  if (!S.limiter) {
+    S.limiter = createSafetyLimiter(S.ctx);
+    S.limiter.connect(S.ctx.destination);
+  }
+  try { S.analyser.disconnect(); } catch {}
+  S.analyser.connect(S.limiter);
+}
+
   // Wire the audio graph to the already-built shell (called from start()).
   async function activateAudio(mode) {
     if (mode === "instrument") {
       S.analyser = S.ctx.createAnalyser(); S.analyser.fftSize = 4096;   // capture window > SCOPE_DRAW so the trigger has slack
-      S.wam.audioNode.connect(S.analyser); S.analyser.connect(S.ctx.destination);
+      S.wam.audioNode.connect(S.analyser); connectOutput(S);
     } else if (mode === "audio-effect") {
       S.analyser = S.ctx.createAnalyser(); S.analyser.fftSize = 4096;   // capture window > SCOPE_DRAW so the trigger has slack
-      S.wam.audioNode.connect(S.analyser); S.analyser.connect(S.ctx.destination);
+      S.wam.audioNode.connect(S.analyser); connectOutput(S);
       S.seedMemo?.();
       $("#src").value = "loop"; await setSource("loop");
     } else if (mode === "midi-effect") {
@@ -1017,6 +1052,20 @@ export async function mountDemo(opts) {
     if (S.mode !== S.shellMode) { $("#body").innerHTML = ""; buildBodyShell(S.mode); S.shellMode = S.mode; }
 
     buildParams(params);           // replaces the reserved (empty) param grid
+
+    // A demo page may pick a musical starting point without touching the
+    // plugin's own defaults. `wah` ships Gain defaulting to +20 dB (the top of
+    // its 0..20 dB range) on a resonant filter, which is a fine thing for a
+    // plugin to allow and a terrible thing to open a web page on.
+    // Keyed by parameter LABEL so a page never hardcodes a numeric id.
+    for (const [label, value] of Object.entries(opts.initialParams || {})) {
+      const param = params.find((q) => q.label === label);
+      if (!param) { console.warn(`initialParams: no parameter named "${label}"`); continue; }
+      S.wam.setParameterValue(param.id, value);
+      const entry = (window.__widgets || {})[param.id];
+      entry?.el?.setValue?.(value);
+      if (entry?.valEl) entry.valEl.textContent = formatValue(param, value);
+    }
     await activateAudio(S.mode);   // wire the audio graph to the existing shell
 
     demo.started = true; S.starting = false;
@@ -1055,6 +1104,7 @@ export async function mountDemo(opts) {
     await S.ctx.close();
     if (S.synthCtx) { try { await S.synthCtx.close(); } catch {} }
     S.ctx = null; S.wam = null; S.synth = null; S.synthCtx = null; S.analyser = null;
+    S.limiter = null;   // belongs to the closed context; rebuilt on next start
     S.chainSynth = false; S.starting = false;
     demo.started = false;
     $("#overlay").style.display = "flex";
@@ -1064,6 +1114,8 @@ export async function mountDemo(opts) {
 
   // Test seams.
   window.__start = start;
+  // Test seam: gain reduction the safety limiter is applying, in dB (0 = idle).
+  window.__limiterReductionDb = () => S.limiter?.reduction ?? null;
   window.__player = {
     setParam: (id, v) => S.wam?.setParameterValue(id, v),
     getParam: (id) => S.wam?.getParameterValue(id),
