@@ -39,8 +39,20 @@ python3 -m http.server -d docs 8080
 
 The script writes a static tree under `docs/` — one folder per demo, each with
 `wam-dsp.js` (the SINGLE_FILE DSP module), `wam-processor.js`, and
-`wam-runtime.mjs`, plus a shared `player/wam-plugin.js`. `docs/` is
-**git-ignored** — no wasm or generated JS is ever committed.
+`wam-runtime.mjs`, plus a shared `player/wam-plugin.js` and a `CREDITS.txt` at
+the site root. `docs/` is **git-ignored** — no wasm or generated JS is ever
+committed.
+
+## Third-party attribution (`CREDITS.txt`)
+
+The demo start overlay inlines Lucide's `play` glyph (ISC). ISC permits reuse
+freely but requires its copyright notice to travel with the work, and
+publishing to a public Pages site **is** redistribution — a comment inside a
+bundled JS file does not discharge that. So `web/CREDITS.txt` is copied to
+`docs/CREDITS.txt` by `build-web.sh`, deploying the notice at the site root
+(`/CREDITS.txt`) where a visitor can reach it. Its wording mirrors pulp's own
+`NOTICE.md` Lucide entry. When a gallery/overlay HTML page is authored, add a
+footer link to `/CREDITS.txt` too.
 
 ## Toolchain pins — and why they are mandatory
 
@@ -68,7 +80,10 @@ The script writes a static tree under `docs/` — one folder per demo, each with
 - **The web editor is not the native editor.** Because `create_view()` returns
   `nullptr` in wasm, the on-page UI is a **token-faithful HTML/canvas
   recreation** of each plugin's controls, not the native Skia-rendered editor.
-  It is driven by the plugin's parameter metadata over the worklet port.
+  It is driven by the plugin's parameter metadata over the worklet port. (For
+  scale: the recreation measures 0.98454 similarity against the committed `gain`
+  baseline at the native suite's own tolerance — the geometry delta is zero and
+  the entire residual is glyph rasterisation.)
 - **Safari has no WebMIDI.** On Safari the on-screen keyboard is the primary
   (only) input for the instrument demos; Chrome/Edge additionally accept a
   connected MIDI controller.

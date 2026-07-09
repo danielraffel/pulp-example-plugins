@@ -107,6 +107,12 @@ mkdir -p "${OUT_DIR}/player"
 cp "${WASM_SRC}/wam-plugin.js"   "${OUT_DIR}/player/wam-plugin.js"
 cp "${WASM_SRC}/wam-runtime.mjs" "${OUT_DIR}/player/wam-runtime.mjs"
 
+# Third-party attribution travels with the deployed site. The start overlay
+# inlines Lucide's ISC-licensed `play` glyph; ISC requires its copyright notice
+# to accompany any redistribution, and publishing to Pages *is* redistribution,
+# so ship the notice at the site root where a visitor can reach it (/CREDITS.txt).
+cp "${REPO_ROOT}/web/CREDITS.txt" "${OUT_DIR}/CREDITS.txt"
+
 for entry in "${DEMOS[@]}"; do
     target="${entry%%:*}"
     folder="${entry##*:}"
