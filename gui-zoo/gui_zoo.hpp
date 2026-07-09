@@ -14,10 +14,16 @@
 //                            sane min viewport, so a host window smaller than
 //                            the full board can still reach every widget.
 
-#include <pulp/design/design_system.hpp>
 #include <pulp/format/processor.hpp>
+// Headless WASM DSP builds curate out core/view (canvas/Skia/text-shaping) and
+// the design/theme + widget layers it feeds, so every editor reference below is
+// gated on PULP_HEADLESS. gui-zoo is ALL editor (no DSP, no params), so headless
+// it collapses to a bare pass-through with no view — that is expected.
+#if !PULP_HEADLESS
+#include <pulp/design/design_system.hpp>
 #include <pulp/view/view.hpp>
 #include <pulp/view/widget_gallery.hpp>
+#endif
 
 #include <algorithm>
 #include <cstddef>
@@ -28,9 +34,12 @@ namespace pulp::examples::guizoo {
 /// Full, non-scrolling widget board under the dark (default) or light Ink &
 /// Signal theme. The returned view sizes itself; read view->bounds() for the
 /// canvas. Used by the headless fixture + screenshot baseline.
+// Editor-only: excluded from headless WASM DSP builds (see PULP_HEADLESS).
+#if !PULP_HEADLESS
 inline std::unique_ptr<pulp::view::View> build_gui_zoo(bool dark = true) {
     return pulp::view::build_widget_gallery(pulp::design::ink_signal_theme(dark));
 }
+#endif
 
 using namespace pulp;
 
@@ -39,10 +48,14 @@ public:
     // The point of this plugin: hand the host the scrolling widget board. The
     // host owns + resizes the returned tree; the ScrollView keeps the full
     // board reachable within whatever bounds the host gives it.
+    // Editor-only: excluded from headless WASM DSP builds (see PULP_HEADLESS);
+    // the base class's headless default then returns nullptr.
+#if !PULP_HEADLESS
     std::unique_ptr<view::View> create_view() override {
         return view::build_scrolling_widget_gallery(
             design::ink_signal_theme(/*dark=*/true), 720.0f, 760.0f);
     }
+#endif
 
     format::PluginDescriptor descriptor() const override {
         return {.name = "GuiZoo", .manufacturer = "Pulp Examples",

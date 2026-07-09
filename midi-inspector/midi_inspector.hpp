@@ -15,7 +15,11 @@
 // faithful sysex echo copies bytes.)
 
 #include <pulp/format/processor.hpp>
+// Headless WASM DSP builds curate out core/view (canvas/Skia/text-shaping), so
+// every editor reference below is gated on PULP_HEADLESS.
+#if !PULP_HEADLESS
 #include <pulp/view/view.hpp>
+#endif
 #include <pulp/runtime/triple_buffer.hpp>
 
 #include <array>
@@ -33,13 +37,20 @@ enum MidiInspectorParams : state::ParamID {
 // Defined out-of-line in midi_inspector_editor.hpp (included at the bottom of this file).
 // Forward-declared so the editor the screenshot tests render is the same
 // tree the host receives from create_view().
+// Editor-only: excluded from headless WASM DSP builds (see PULP_HEADLESS).
+#if !PULP_HEADLESS
 std::unique_ptr<view::View> build_midi_inspector_editor(state::StateStore& store);
+#endif
 
 class MidiInspectorProcessor : public format::Processor {
 public:
     // Hand the host our dark Ink & Signal editor; the framework owns the
     // returned tree and may call this once per attached editor window.
+    // Editor-only: excluded from headless WASM DSP builds (see PULP_HEADLESS);
+    // the base class's headless default then returns nullptr.
+#if !PULP_HEADLESS
     std::unique_ptr<view::View> create_view() override { return build_midi_inspector_editor(state()); }
+#endif
 
     static constexpr int kRingCapacity = 64;
 
@@ -177,4 +188,7 @@ inline std::unique_ptr<format::Processor> create_midi_inspector() {
 // Pulls in the inline definition of build_midi_inspector_editor (declared above) so create_view()
 // links in the plugin adapter and the headless tests alike. After the class so
 // the editor header sees a complete definition; its re-include is a no-op.
+// Editor-only: excluded from headless WASM DSP builds (see PULP_HEADLESS).
+#if !PULP_HEADLESS
 #include "midi_inspector_editor.hpp"
+#endif

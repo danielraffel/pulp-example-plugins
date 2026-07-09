@@ -9,3 +9,8 @@ compile_commands.json
 # Build + packaging outputs
 artifacts/
 build/
+
+# Web demo build + generated site output (never commit .wasm / generated JS).
+web/build/
+docs/
+_site/

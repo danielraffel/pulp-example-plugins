@@ -11,17 +11,63 @@ pure MIDI utility, a minimal instrument, and a UI fixture.
 
 ## Status
 
-| Example | Editor | Notes |
-|---|---|---|
-| MIDI Transpose | <img src="screenshots/midi-transpose.png" width="220"> | Pure MIDI effect — semitone note shifter, passes CC/bend/SysEx through |
-| SysEx Echo | <img src="screenshots/sysex-echo.png" width="220"> | MIDI effect — round-trips System Exclusive payloads (echo on/off) |
-| MIDI Inspector | <img src="screenshots/midi-inspector.png" width="220"> | MIDI pass-through that logs events (counts, ring, filters, dropped) via TripleBuffer |
-| State Memo | <img src="screenshots/state-memo.png" width="220"> | Custom plugin state (a free-text memo) beyond automatable params; fail-safe (de)serialize |
-| MPE Spreader | <img src="screenshots/mpe-spreader.png" width="220"> | MIDI effect — gives every held note its own MPE member channel (note-off integrity, recycle) |
-| MonoSynth | <img src="screenshots/mono-synth.png" width="220"> | Minimal monophonic instrument (oscillator + ADSR), MIDI in → audio out |
-| Synth With Presets | <img src="screenshots/synth-with-presets.png" width="220"> | Instrument + factory preset bank, pitch bend & mod-wheel vibrato; clean recall semantics |
-| Gain | <img src="screenshots/gain.png" width="220"> | Plain utility effect — linear gain (fader) + equal-power pan (knob); stereo in → out |
-| gui-zoo | <img src="gui-zoo/baseline.png" width="220"> | Installable widget-gallery plugin — a zero-DSP pass-through effect whose editor scrolls the full Ink & Signal widget board; also a deterministic screenshot fixture |
+**[▶ Try the live web demos](https://danielraffel.github.io/pulp-example-plugins/)** — a gallery
+that links to every plugin below running in the browser as a headless WebAssembly
+(WAMv2) module. In each row the **▶ Live demo** link — and the editor screenshot
+itself — opens that plugin's "click to start" page.
+
+> **What you're actually seeing.** The on-page editor is a *token-faithful
+> HTML/canvas recreation* of each plugin's controls, **not** the native
+> Skia-rendered editor: `create_view()` returns `nullptr` in wasm, so the real
+> editor cannot run on this path. In **Safari there is no WebMIDI**, so the
+> on-screen keyboard is the primary input; a hardware MIDI controller is
+> progressive enhancement on Chrome/Edge. The links **404 until GitHub Pages is
+> switched to "GitHub Actions"** as the publishing source (a one-time
+> repo-settings toggle) — see [`web/README.md`](web/README.md). The start
+> overlay's play glyph is from Lucide (ISC); its notice travels with the site at
+> [`/CREDITS.txt`](https://danielraffel.github.io/pulp-example-plugins/CREDITS.txt).
+
+| Example | Editor | Demo | Notes |
+|---|---|---|---|
+| MIDI Transpose | <a href="https://danielraffel.github.io/pulp-example-plugins/midi-transpose/"><img src="screenshots/midi-transpose.png" width="220"></a> | [▶ Live demo](https://danielraffel.github.io/pulp-example-plugins/midi-transpose/) | Pure MIDI effect — semitone note shifter, passes CC/bend/SysEx through |
+| SysEx Echo | <a href="https://danielraffel.github.io/pulp-example-plugins/sysex-echo/"><img src="screenshots/sysex-echo.png" width="220"></a> | [▶ Live demo](https://danielraffel.github.io/pulp-example-plugins/sysex-echo/) | MIDI effect — round-trips System Exclusive payloads (echo on/off) |
+| MIDI Inspector | <a href="https://danielraffel.github.io/pulp-example-plugins/midi-inspector/"><img src="screenshots/midi-inspector.png" width="220"></a> | [▶ Live demo](https://danielraffel.github.io/pulp-example-plugins/midi-inspector/) | MIDI pass-through that logs events (counts, ring, filters, dropped) via TripleBuffer |
+| State Memo | <a href="https://danielraffel.github.io/pulp-example-plugins/state-memo/"><img src="screenshots/state-memo.png" width="220"></a> | [▶ Live demo](https://danielraffel.github.io/pulp-example-plugins/state-memo/) | Custom plugin state (a free-text memo) beyond automatable params; fail-safe (de)serialize |
+| MPE Spreader | <a href="https://danielraffel.github.io/pulp-example-plugins/mpe-spreader/"><img src="screenshots/mpe-spreader.png" width="220"></a> | [▶ Live demo](https://danielraffel.github.io/pulp-example-plugins/mpe-spreader/) | MIDI effect — gives every held note its own MPE member channel (note-off integrity, recycle) |
+| MonoSynth | <a href="https://danielraffel.github.io/pulp-example-plugins/mono-synth/"><img src="screenshots/mono-synth.png" width="220"></a> | [▶ Live demo](https://danielraffel.github.io/pulp-example-plugins/mono-synth/) | Minimal monophonic instrument (oscillator + ADSR), MIDI in → audio out |
+| Synth With Presets | <a href="https://danielraffel.github.io/pulp-example-plugins/synth-with-presets/"><img src="screenshots/synth-with-presets.png" width="220"></a> | [▶ Live demo](https://danielraffel.github.io/pulp-example-plugins/synth-with-presets/) | Instrument + factory preset bank, pitch bend & mod-wheel vibrato; clean recall semantics |
+| Gain | <a href="https://danielraffel.github.io/pulp-example-plugins/gain/"><img src="screenshots/gain.png" width="220"></a> | [▶ Live demo](https://danielraffel.github.io/pulp-example-plugins/gain/) | Plain utility effect — linear gain (fader) + equal-power pan (knob); stereo in → out |
+| gui-zoo | <img src="gui-zoo/baseline.png" width="220"> | —[^gui-zoo] | Installable widget-gallery plugin — a zero-DSP pass-through effect whose editor scrolls the full Ink & Signal widget board; also a deterministic screenshot fixture |
+
+[^gui-zoo]: gui-zoo has no web demo. It is a `Processor` whose only content is `create_view()`, and `create_view()` hard-returns `nullptr` in every WASM build (`core/format/src/wasm/headless_defaults.cpp`) — with no DSP and no reachable UI on this path there is nothing to run in the browser.
+
+## How the web demos work
+
+Each demo runs the **same audio code as the native plugin** — not a
+reimplementation. A Pulp plugin's engine is a C++ `Processor`; the exact same
+source that compiles to the VST3 / CLAP / AU builds is also compiled, via
+[Emscripten](https://emscripten.org/), to a **WebAssembly** module. In the
+browser that module runs on the real-time audio thread inside a Web Audio
+[`AudioWorklet`](https://developer.mozilla.org/en-US/docs/Web/API/AudioWorklet),
+packaged as a [WAM (Web Audio Module) v2](https://www.webaudiomodules.com/)
+plugin. The compile target is Emscripten's
+[Wasm Audio Worklets](https://emscripten.org/docs/api_reference/wasm_audio_worklets.html).
+
+**What's identical, and what differs:**
+
+- **DSP (the sound) — identical.** Oscillators, envelopes, the MIDI logic — the
+  same `.hpp` that ships in the native plugin, compiled to WebAssembly and driven
+  block-by-block from the AudioWorklet. MIDI, SysEx, and saved state all cross the
+  same ABI the native hosts use.
+- **Editor (the UI) — a faithful recreation.** The native plugin renders its
+  editor with Skia, which isn't available in the browser (`create_view()` returns
+  `nullptr` in the WASM build). So each page rebuilds the controls as HTML/Canvas
+  widgets that read the **same Ink & Signal design tokens** — it looks and behaves
+  like the native editor without being the same renderer.
+
+Audio never auto-plays: every demo waits behind a click-to-start overlay, and an
+instrument demo gives you an on-screen keyboard (and your computer keyboard) to
+play it.
 
 ## Credits
 
