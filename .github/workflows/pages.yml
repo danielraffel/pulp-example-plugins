@@ -39,7 +39,7 @@ env:
   # installed SDK is not enough. Pinned to danielraffel/pulp origin/main as of
   # 2026-07-08. Repo is public, so CI can shallow-clone it.
   PULP_REPO: danielraffel/pulp
-  PULP_REF: d86f57db96be782753f240e827f00fbf753f3449
+  PULP_REF: 59526de8852c1b489d3957b2aa9b34884cad9d04
   # choc headers (MIDI only, for the headless DSP). This is the exact ref pulp's
   # own dependency manifest registers (tools/cmake/PulpDependencies.cmake pins
   # choc to danielraffel/choc @ df148a41 — an interim fork of Tracktion/choc#64),
