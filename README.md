@@ -41,6 +41,34 @@ itself — opens that plugin's "click to start" page.
 
 [^gui-zoo]: gui-zoo has no web demo. It is a `Processor` whose only content is `create_view()`, and `create_view()` hard-returns `nullptr` in every WASM build (`core/format/src/wasm/headless_defaults.cpp`) — with no DSP and no reachable UI on this path there is nothing to run in the browser.
 
+## How the web demos work
+
+Each demo runs the **same audio code as the native plugin** — not a
+reimplementation. A Pulp plugin's engine is a C++ `Processor`; the exact same
+source that compiles to the VST3 / CLAP / AU builds is also compiled, via
+[Emscripten](https://emscripten.org/), to a **WebAssembly** module. In the
+browser that module runs on the real-time audio thread inside a Web Audio
+[`AudioWorklet`](https://developer.mozilla.org/en-US/docs/Web/API/AudioWorklet),
+packaged as a [WAM (Web Audio Module) v2](https://www.webaudiomodules.com/)
+plugin. The compile target is Emscripten's
+[Wasm Audio Worklets](https://emscripten.org/docs/api_reference/wasm_audio_worklets.html).
+
+**What's identical, and what differs:**
+
+- **DSP (the sound) — identical.** Oscillators, envelopes, the MIDI logic — the
+  same `.hpp` that ships in the native plugin, compiled to WebAssembly and driven
+  block-by-block from the AudioWorklet. MIDI, SysEx, and saved state all cross the
+  same ABI the native hosts use.
+- **Editor (the UI) — a faithful recreation.** The native plugin renders its
+  editor with Skia, which isn't available in the browser (`create_view()` returns
+  `nullptr` in the WASM build). So each page rebuilds the controls as HTML/Canvas
+  widgets that read the **same Ink & Signal design tokens** — it looks and behaves
+  like the native editor without being the same renderer.
+
+Audio never auto-plays: every demo waits behind a click-to-start overlay, and an
+instrument demo gives you an on-screen keyboard (and your computer keyboard) to
+play it.
+
 ## Credits
 
 Inspired by truce-audio's [truce](https://github.com/truce-audio/truce) example
