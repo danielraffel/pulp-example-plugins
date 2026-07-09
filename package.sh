@@ -11,6 +11,7 @@
 # Each bundle is deep-signed (inner dylibs first so @loader_path stays
 # relocatable) before packaging. Notarize the resulting .pkg separately:
 #   pulp ship notarize --path <out>/PulpExamplePlugins-<ver>.pkg
+# Release both the notarized .pkg and the generated <out>/SHA256SUMS asset.
 #
 # Usage:
 #   ./package.sh --version 0.1.0 \
@@ -90,3 +91,9 @@ productbuild --distribution "$STAGE/distribution.xml" --package-path "$STAGE/com
   --version "$VERSION" --sign "$INST_ID" "$OUT_PKG"
 echo "built: $OUT_PKG"
 pkgutil --check-signature "$OUT_PKG" | sed -n '1,4p'
+(
+  cd "$OUT"
+  shasum -a 256 "$(basename "$OUT_PKG")" > SHA256SUMS
+  shasum -a 256 -c SHA256SUMS
+)
+echo "checksums: $OUT/SHA256SUMS"

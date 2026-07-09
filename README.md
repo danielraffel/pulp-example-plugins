@@ -41,6 +41,46 @@ itself — opens that plugin's "click to start" page.
 
 [^gui-zoo]: gui-zoo has no web demo. It is a `Processor` whose only content is `create_view()`, and `create_view()` hard-returns `nullptr` in every WASM build (`core/format/src/wasm/headless_defaults.cpp`) — with no DSP and no reachable UI on this path there is nothing to run in the browser.
 
+## Install the macOS package
+
+Prebuilt macOS installers are published on the
+[Releases](https://github.com/danielraffel/pulp-example-plugins/releases) page.
+The package installs the AU, VST3, and CLAP builds of the examples and lets you
+choose formats in the installer Customize pane.
+
+Prefer to build everything yourself? See [Building](#building).
+
+<details>
+<summary><strong>Optional: verify before installation</strong> (click to expand)</summary>
+
+For an additional check before installing, download the package and verify its
+SHA-256 checksum against the release's `SHA256SUMS` file:
+
+```bash
+version=0.2.0
+asset="PulpExamplePlugins-${version}.pkg"
+base="https://github.com/danielraffel/pulp-example-plugins/releases/download/v${version}"
+
+curl -fSLO "$base/$asset"
+curl -fSLO "$base/SHA256SUMS"
+awk -v file="$asset" '$2 == file { print }' SHA256SUMS | shasum -a 256 -c -
+```
+
+Update `version` if you are installing a newer release.
+
+You can also inspect the macOS package signature:
+
+```bash
+pkgutil --check-signature "$asset"
+```
+
+The checksum confirms the downloaded file matches the release asset. GitHub
+also exposes a SHA-256 digest for release assets in the Releases UI and API. The
+current macOS package is built and notarized outside GitHub Actions, so this
+release does not claim GitHub Actions build provenance.
+
+</details>
+
 ## How the web demos work
 
 Each demo runs the **same audio code as the native plugin** — not a
