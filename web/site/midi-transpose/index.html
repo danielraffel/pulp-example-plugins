@@ -1,5 +1,20 @@
 <!doctype html>
-<meta charset="utf-8">
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>MIDI Transpose — Pulp web demo</title>
+  <meta name="description" content="Shifts every note you play up or down by a set number of semitones and octaves.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Pulp">
+  <meta property="og:title" content="MIDI Transpose — Pulp web demo">
+  <meta property="og:description" content="Shifts every note you play up or down by a set number of semitones and octaves.">
+  <meta property="og:url" content="https://www.generouscorp.com/pulp-example-plugins/midi-transpose/">
+  <meta name="twitter:title" content="MIDI Transpose — Pulp web demo">
+  <meta name="twitter:description" content="Shifts every note you play up or down by a set number of semitones and octaves.">
+  <meta name="twitter:card" content="summary">
+</head>
+<body>
 <div id="app"></div>
 <script type="module">
 import { mountDemo } from "../player/pulp-player.js";
@@ -13,3 +28,5 @@ mountDemo({
   synthUrls: { dsp: "../mono-synth/wam-dsp.js", processor: "../mono-synth/wam-processor.js" },
 });
 </script>
+</body>
+</html>
