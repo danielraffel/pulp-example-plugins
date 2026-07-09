@@ -173,6 +173,23 @@ if [[ "${missing}" -ne 0 ]]; then
     exit 1
 fi
 
+# --- Cache-bust the player import (authoritative) ----------------------------
+# GitHub Pages serves player/pulp-player.js with max-age=14400 (4h) but the demo
+# pages with max-age=600 (10m), and the page's `import ".../pulp-player.js"`
+# carries no version — so an updated player would not reach a returning visitor
+# for hours. Stamp every page's player import with a short content hash of the
+# DEPLOYED player so a change always forces a refetch, regardless of whether
+# gen-og was re-run. Only the main-thread entry import is versioned, never the
+# worklet processor/dsp URLs (whose two sides must hash to one processor name).
+PLAYER_JS="${OUT_DIR}/player/pulp-player.js"
+if [[ -f "${PLAYER_JS}" ]]; then
+    PLAYER_HASH="$( { shasum "${PLAYER_JS}" 2>/dev/null || sha1sum "${PLAYER_JS}"; } | cut -c1-8 )"
+    find "${OUT_DIR}" -type f -name 'index.html' -print0 | while IFS= read -r -d '' page; do
+        perl -0pi -e "s{(['\"])((?:\\.\\.?/)*player/pulp-player\\.js)(?:\\?v=[a-f0-9]+)?\\1}{\$1\$2?v=${PLAYER_HASH}\$1}g" "${page}"
+    done
+    echo "==> player import stamped ?v=${PLAYER_HASH}"
+fi
+
 echo
 echo "==> Assembled site tree at ${OUT_DIR}:"
 find "${OUT_DIR}" -type f | sort | while read -r f; do
