@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <cmath>
 #include <memory>
+#include <string>
 
 namespace pulp::examples::classic {
 
@@ -59,8 +60,15 @@ public:
         // round-trips through the host's normalized domain only to float
         // precision); for a simple example that determinism is worth more than
         // a tapered control feel.
+        // to_string names each discrete value. The native editor's combo reads
+        // these, and a headless web build surfaces them through
+        // wam_parameters() as "labels", so a generated browser control shows
+        // Sine/Saw/Square/Triangle rather than a bare 0..3 slider.
         store.add_parameter({.id = kWaveform, .name = "Waveform", .unit = "",
-                             .range = {0.0f, 3.0f, 1.0f, 1.0f}});
+                             .range = {0.0f, 3.0f, 1.0f, 1.0f},
+                             .to_string = [](float v) {
+                                 return std::string(waveform_name(v));
+                             }});
         store.add_parameter({.id = kAttack, .name = "Attack", .unit = "s",
                              .range = {0.001f, 2.0f, 0.05f, 0.0f}});
         store.add_parameter({.id = kDecay, .name = "Decay", .unit = "s",
@@ -147,8 +155,21 @@ private:
         return 440.0f * std::pow(2.0f, (note - 69) / 12.0f);
     }
 
+    // One place decides what a Waveform value means; the name and the
+    // oscillator setting are both derived from it, so they cannot drift.
+    static int waveform_index(float v) { return static_cast<int>(v + 0.5f); }
+
+    static const char* waveform_name(float v) {
+        switch (waveform_index(v)) {
+            case 0:  return "Sine";
+            case 2:  return "Square";
+            case 3:  return "Triangle";
+            default: return "Saw";
+        }
+    }
+
     static signal::Oscillator::Waveform waveform_from_param(float v) {
-        switch (static_cast<int>(v + 0.5f)) {
+        switch (waveform_index(v)) {
             case 0:  return signal::Oscillator::Waveform::sine;
             case 2:  return signal::Oscillator::Waveform::square;
             case 3:  return signal::Oscillator::Waveform::triangle;
