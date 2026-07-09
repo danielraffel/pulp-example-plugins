@@ -99,7 +99,13 @@ mkdir -p "${OUT_DIR}/player"
 # The shared main-thread WAM host is served ONCE at player/wam-plugin.js. It is
 # loaded by the site page and told each demo's dsp+processor URLs, so it does not
 # need to sit next to the DSP.
-cp "${WASM_SRC}/wam-plugin.js" "${OUT_DIR}/player/wam-plugin.js"
+#
+# It DOES need wam-runtime.mjs beside it: wam-plugin.js imports
+# processorNameForUrl() from there, so that the AudioWorkletNode it creates asks
+# for the same per-module processor name the worklet registered. Ship a copy in
+# player/ as well as in each demo dir (the worklet imports its own).
+cp "${WASM_SRC}/wam-plugin.js"   "${OUT_DIR}/player/wam-plugin.js"
+cp "${WASM_SRC}/wam-runtime.mjs" "${OUT_DIR}/player/wam-runtime.mjs"
 
 for entry in "${DEMOS[@]}"; do
     target="${entry%%:*}"
