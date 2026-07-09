@@ -1,5 +1,20 @@
 <!doctype html>
-<meta charset="utf-8">
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>MPE Spreader — Pulp web demo</title>
+  <meta name="description" content="Gives each note you hold its own channel, so a chord spreads out across the lanes.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Pulp">
+  <meta property="og:title" content="MPE Spreader — Pulp web demo">
+  <meta property="og:description" content="Gives each note you hold its own channel, so a chord spreads out across the lanes.">
+  <meta property="og:url" content="https://www.generouscorp.com/pulp-example-plugins/mpe-spreader/">
+  <meta name="twitter:title" content="MPE Spreader — Pulp web demo">
+  <meta name="twitter:description" content="Gives each note you hold its own channel, so a chord spreads out across the lanes.">
+  <meta name="twitter:card" content="summary">
+</head>
+<body>
 <div id="app"></div>
 <script type="module">
 import { mountDemo } from "../player/pulp-player.js";
@@ -13,3 +28,5 @@ mountDemo({
   synthUrls: { dsp: "../mono-synth/wam-dsp.js", processor: "../mono-synth/wam-processor.js" },
 });
 </script>
+</body>
+</html>

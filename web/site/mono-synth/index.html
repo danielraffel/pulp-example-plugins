@@ -1,5 +1,20 @@
 <!doctype html>
-<meta charset="utf-8">
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Mono Synth — Pulp web demo</title>
+  <meta name="description" content="Play one note at a time. Shape each note with attack, decay, sustain, release and volume.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Pulp">
+  <meta property="og:title" content="Mono Synth — Pulp web demo">
+  <meta property="og:description" content="Play one note at a time. Shape each note with attack, decay, sustain, release and volume.">
+  <meta property="og:url" content="https://www.generouscorp.com/pulp-example-plugins/mono-synth/">
+  <meta name="twitter:title" content="Mono Synth — Pulp web demo">
+  <meta name="twitter:description" content="Play one note at a time. Shape each note with attack, decay, sustain, release and volume.">
+  <meta name="twitter:card" content="summary">
+</head>
+<body>
 <div id="app"></div>
 <script type="module">
 import { mountDemo } from "../player/pulp-player.js";
@@ -11,3 +26,5 @@ mountDemo({
   mode: "instrument", paramRows: 2,
 });
 </script>
+</body>
+</html>
