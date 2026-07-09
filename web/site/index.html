@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pulp — Example Plugin Gallery</title>
+<link rel="stylesheet" href="player/tokens.css">
+<link rel="stylesheet" href="player/fonts.css">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg-surface);color:var(--text-primary);
+       font:14px/1.5 var(--font-family-native)}
+  .wrap{max-width:860px;margin:0 auto;padding:48px 20px 80px}
+  header h1{margin:0 0 6px;font-size:22px;font-weight:400}
+  header p{margin:0 0 32px;color:var(--text-secondary);font-size:13px;max-width:620px;line-height:1.6}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+  .card{background:var(--bg-primary);border:1px solid var(--control-border);border-radius:10px;
+        padding:18px 18px 16px;display:flex;flex-direction:column;gap:8px;
+        text-decoration:none;color:inherit;transition:border-color .15s,transform .15s}
+  .card:hover{border-color:var(--accent-primary);transform:translateY(-2px)}
+  .card .tag{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-secondary)}
+  .card h2{margin:0;font-size:15px}
+  .card p{margin:0;color:var(--text-secondary);font-size:12.5px;flex:1;line-height:1.5}
+  .card .go{color:var(--accent-primary);font-size:12px;letter-spacing:.06em;margin-top:4px}
+  footer{margin-top:40px;color:var(--text-secondary);font-size:12px;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Pulp — Example Plugins</h1>
+    <p>Eight small plugins running right here in your browser. Instruments give you a
+       keyboard to play; sound effects run a short backing loop through themselves so you
+       can hear the change; note effects show you what they're doing. Nothing is uploaded —
+       it all runs on your machine.</p>
+  </header>
+  <div class="grid" id="grid"></div>
+  <footer>
+    Pick a card to open it, then click <b>Start</b> to make sound. Note effects can feed
+    their output into a synth so you can hear the result.
+  </footer>
+</div>
+<script>
+const plugins = [
+  { dir:"mono-synth",      tag:"Instrument",   name:"Mono Synth",        desc:"Play one note at a time. Shape each note with attack, decay, sustain, release and volume." },
+  { dir:"synth-with-presets",  tag:"Instrument",   name:"Synth With Presets",desc:"A small synth with three ready-made sounds — Pluck, Pad and Sine. Pick one and the knobs move to match." },
+  { dir:"gain",           tag:"Sound effect", name:"Gain & Pan",        desc:"Make the sound louder or quieter and move it left or right. A looping backing track runs through it." },
+  { dir:"state-memo",     tag:"Sound effect", name:"State Memo",        desc:"A volume control plus a text note that saves and reloads with the plugin." },
+  { dir:"midi-transpose", tag:"Note effect",  name:"MIDI Transpose",    desc:"Shifts every note you play up or down by a set number of semitones and octaves." },
+  { dir:"mpe-spreader",   tag:"Note effect",  name:"MPE Spreader",      desc:"Gives each note you hold its own channel, so a chord spreads out across the lanes." },
+  { dir:"midi-inspector", tag:"Note effect",  name:"MIDI Inspector",    desc:"Shows every MIDI message going through, live — name, channel and raw bytes." },
+  { dir:"sysex-echo",     tag:"Note effect",  name:"SysEx Echo",        desc:"Send it a SysEx message and it sends the very same bytes right back." },
+];
+const grid = document.getElementById("grid");
+for (const p of plugins) {
+  const a = document.createElement("a");
+  a.className = "card";
+  a.href = `${p.dir}/index.html`;
+  a.innerHTML =
+    `<span class="tag">${p.tag}</span>` +
+    `<h2>${p.name}</h2>` +
+    `<p>${p.desc}</p>` +
+    `<span class="go">▶ Open demo</span>`;
+  grid.appendChild(a);
+}
+</script>
+</body>
+</html>

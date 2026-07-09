@@ -96,6 +96,13 @@ DEMOS=(
 rm -rf "${OUT_DIR}"
 mkdir -p "${OUT_DIR}/player"
 
+# The authored site — gallery + one page per demo + the <pulp-demo> player and
+# its canvas widgets — lives in web/site/ and is committed. Everything else in
+# docs/ is generated below. The demo folder names in web/site/ must match the
+# DEMOS mapping, so a page finds its own wam-dsp.js as a sibling; the cross-check
+# after the loop enforces that rather than trusting it.
+cp -R "${REPO_ROOT}/web/site/." "${OUT_DIR}/"
+
 # The shared main-thread WAM host is served ONCE at player/wam-plugin.js. It is
 # loaded by the site page and told each demo's dsp+processor URLs, so it does not
 # need to sit next to the DSP.
@@ -106,6 +113,11 @@ mkdir -p "${OUT_DIR}/player"
 # player/ as well as in each demo dir (the worklet imports its own).
 cp "${WASM_SRC}/wam-plugin.js"   "${OUT_DIR}/player/wam-plugin.js"
 cp "${WASM_SRC}/wam-runtime.mjs" "${OUT_DIR}/player/wam-runtime.mjs"
+
+# The player imports the SDK's oscilloscope trigger (a scope that plots from the
+# raw analyser buffer shows a waveform sliding sideways every frame; wam-scope
+# finds the rising zero-crossing so it stands still). Ship it beside the player.
+cp "${WASM_SRC}/wam-scope.mjs"   "${OUT_DIR}/player/wam-scope.mjs"
 
 # Third-party attribution travels with the deployed site. The start overlay
 # inlines Lucide's ISC-licensed `play` glyph; ISC requires its copyright notice
@@ -137,6 +149,29 @@ for entry in "${DEMOS[@]}"; do
     cp "${WASM_SRC}/wam-processor.js" "${dest}/wam-processor.js"
     cp "${WASM_SRC}/wam-runtime.mjs"  "${dest}/wam-runtime.mjs"
 done
+
+# Every demo folder must carry BOTH its generated DSP and its authored page.
+# A folder rename in web/site/ (or in DEMOS) would otherwise ship a gallery whose
+# links 404, or a page whose sibling ./wam-dsp.js does not exist — both of which
+# only surface in a browser, late.
+missing=0
+for entry in "${DEMOS[@]}"; do
+    folder="${entry##*:}"
+    for required in "${OUT_DIR}/${folder}/index.html" "${OUT_DIR}/${folder}/wam-dsp.js"; do
+        if [[ ! -f "${required}" ]]; then
+            echo "error: ${required#"${OUT_DIR}/"} is missing." >&2
+            missing=1
+        fi
+    done
+done
+if [[ ! -f "${OUT_DIR}/index.html" ]]; then
+    echo "error: gallery index.html is missing (web/site/index.html not copied?)." >&2
+    missing=1
+fi
+if [[ "${missing}" -ne 0 ]]; then
+    echo "error: web/site/ demo folders must match the DEMOS mapping in this script." >&2
+    exit 1
+fi
 
 echo
 echo "==> Assembled site tree at ${OUT_DIR}:"

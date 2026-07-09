@@ -1,0 +1,15 @@
+<!doctype html>
+<meta charset="utf-8">
+<div id="app"></div>
+<script type="module">
+import { mountDemo } from "../player/pulp-player.js";
+mountDemo({
+  root: document.getElementById("app"),
+  title: "MIDI Transpose",
+  subtitle: "Shifts every note you play up or down by a set number of semitones and octaves.",
+  dspUrl: "./wam-dsp.js", processorUrl: "./wam-processor.js",
+  paramRows: 1,
+  midiViz: "transpose",
+  synthUrls: { dsp: "../mono-synth/wam-dsp.js", processor: "../mono-synth/wam-processor.js" },
+});
+</script>
