@@ -11,10 +11,22 @@ pure MIDI utility, a minimal instrument, and a UI fixture.
 
 ## Status
 
-**[▶ Try the live web demos](https://danielraffel.github.io/pulp-example-plugins/)** — a gallery
-that links to every plugin below running in the browser as a headless WebAssembly
-(WAMv2) module. In each row the **▶ Live demo** link — and the editor screenshot
-itself — opens that plugin's "click to start" page.
+**Try the live web demos** — every plugin below runs in the browser on the **same
+C++ `Processor`** as the native plugin, offered two ways:
+
+- **[WAM gallery ▶](https://danielraffel.github.io/pulp-example-plugins/)** — the
+  `Processor` compiled with Emscripten to a single-threaded WebAssembly module in an
+  `AudioWorklet`, packaged as [WAM v2](https://www.webaudiomodules.com/). Runs on any
+  static host (plain GitHub Pages); no special headers.
+- **[WebCLAP gallery ▶](https://pulp-wclap-demos.pages.dev/example-plugins/)** — the
+  same `Processor` compiled with wasi-sdk (`wasm32-wasi-threads`, shared memory)
+  exposing the real **CLAP ABI** to a worklet-resident CLAP host. Requires
+  cross-origin isolation, so it is served from Cloudflare Pages.
+
+Both paths share the audio engine and differ only in a thin per-target adapter — see
+**[WAM vs WebCLAP: how the web demos are built](web/WAM-vs-WEBCLAP.md)** for
+the full, evenhanded comparison. In each row the editor screenshot and the **▶ WAM** /
+**▶ WebCLAP** links open that plugin's "click to start" page.
 
 > **What you're actually seeing.** The on-page editor is a *token-faithful
 > HTML/canvas recreation* of each plugin's controls, **not** the native
@@ -27,16 +39,16 @@ itself — opens that plugin's "click to start" page.
 > overlay's play glyph is from Lucide (ISC); its notice travels with the site at
 > [`/CREDITS.txt`](https://danielraffel.github.io/pulp-example-plugins/CREDITS.txt).
 
-| Example | Editor | Demo | Notes |
+| Example | Editor | Web demos | Notes |
 |---|---|---|---|
-| MIDI Transpose | <a href="https://danielraffel.github.io/pulp-example-plugins/midi-transpose/"><img src="screenshots/midi-transpose.png" width="220"></a> | [▶ Live demo](https://danielraffel.github.io/pulp-example-plugins/midi-transpose/) | Pure MIDI effect — semitone note shifter, passes CC/bend/SysEx through |
-| SysEx Echo | <a href="https://danielraffel.github.io/pulp-example-plugins/sysex-echo/"><img src="screenshots/sysex-echo.png" width="220"></a> | [▶ Live demo](https://danielraffel.github.io/pulp-example-plugins/sysex-echo/) | MIDI effect — round-trips System Exclusive payloads (echo on/off) |
-| MIDI Inspector | <a href="https://danielraffel.github.io/pulp-example-plugins/midi-inspector/"><img src="screenshots/midi-inspector.png" width="220"></a> | [▶ Live demo](https://danielraffel.github.io/pulp-example-plugins/midi-inspector/) | MIDI pass-through that logs events (counts, ring, filters, dropped) via TripleBuffer |
-| State Memo | <a href="https://danielraffel.github.io/pulp-example-plugins/state-memo/"><img src="screenshots/state-memo.png" width="220"></a> | [▶ Live demo](https://danielraffel.github.io/pulp-example-plugins/state-memo/) | Custom plugin state (a free-text memo) beyond automatable params; fail-safe (de)serialize |
-| MPE Spreader | <a href="https://danielraffel.github.io/pulp-example-plugins/mpe-spreader/"><img src="screenshots/mpe-spreader.png" width="220"></a> | [▶ Live demo](https://danielraffel.github.io/pulp-example-plugins/mpe-spreader/) | MIDI effect — gives every held note its own MPE member channel (note-off integrity, recycle) |
-| MonoSynth | <a href="https://danielraffel.github.io/pulp-example-plugins/mono-synth/"><img src="screenshots/mono-synth.png" width="220"></a> | [▶ Live demo](https://danielraffel.github.io/pulp-example-plugins/mono-synth/) | Minimal monophonic instrument (oscillator + ADSR), MIDI in → audio out |
-| Synth With Presets | <a href="https://danielraffel.github.io/pulp-example-plugins/synth-with-presets/"><img src="screenshots/synth-with-presets.png" width="220"></a> | [▶ Live demo](https://danielraffel.github.io/pulp-example-plugins/synth-with-presets/) | Instrument + factory preset bank, pitch bend & mod-wheel vibrato; clean recall semantics |
-| Gain | <a href="https://danielraffel.github.io/pulp-example-plugins/gain/"><img src="screenshots/gain.png" width="220"></a> | [▶ Live demo](https://danielraffel.github.io/pulp-example-plugins/gain/) | Plain utility effect — linear gain (fader) + equal-power pan (knob); stereo in → out |
+| MIDI Transpose | <a href="https://danielraffel.github.io/pulp-example-plugins/midi-transpose/"><img src="screenshots/midi-transpose.png" width="220"></a> | [▶ WAM](https://danielraffel.github.io/pulp-example-plugins/midi-transpose/) · [▶ WebCLAP](https://pulp-wclap-demos.pages.dev/example-plugins/midi-transpose/) | Pure MIDI effect — semitone note shifter, passes CC/bend/SysEx through |
+| SysEx Echo | <a href="https://danielraffel.github.io/pulp-example-plugins/sysex-echo/"><img src="screenshots/sysex-echo.png" width="220"></a> | [▶ WAM](https://danielraffel.github.io/pulp-example-plugins/sysex-echo/) · [▶ WebCLAP](https://pulp-wclap-demos.pages.dev/example-plugins/sysex-echo/) | MIDI effect — round-trips System Exclusive payloads (echo on/off) |
+| MIDI Inspector | <a href="https://danielraffel.github.io/pulp-example-plugins/midi-inspector/"><img src="screenshots/midi-inspector.png" width="220"></a> | [▶ WAM](https://danielraffel.github.io/pulp-example-plugins/midi-inspector/) · [▶ WebCLAP](https://pulp-wclap-demos.pages.dev/example-plugins/midi-inspector/) | MIDI pass-through that logs events (counts, ring, filters, dropped) via TripleBuffer |
+| State Memo | <a href="https://danielraffel.github.io/pulp-example-plugins/state-memo/"><img src="screenshots/state-memo.png" width="220"></a> | [▶ WAM](https://danielraffel.github.io/pulp-example-plugins/state-memo/) · [▶ WebCLAP](https://pulp-wclap-demos.pages.dev/example-plugins/state-memo/) | Custom plugin state (a free-text memo) beyond automatable params; fail-safe (de)serialize |
+| MPE Spreader | <a href="https://danielraffel.github.io/pulp-example-plugins/mpe-spreader/"><img src="screenshots/mpe-spreader.png" width="220"></a> | [▶ WAM](https://danielraffel.github.io/pulp-example-plugins/mpe-spreader/) · [▶ WebCLAP](https://pulp-wclap-demos.pages.dev/example-plugins/mpe-spreader/) | MIDI effect — gives every held note its own MPE member channel (note-off integrity, recycle) |
+| MonoSynth | <a href="https://danielraffel.github.io/pulp-example-plugins/mono-synth/"><img src="screenshots/mono-synth.png" width="220"></a> | [▶ WAM](https://danielraffel.github.io/pulp-example-plugins/mono-synth/) · [▶ WebCLAP](https://pulp-wclap-demos.pages.dev/example-plugins/mono-synth/) | Minimal monophonic instrument (oscillator + ADSR), MIDI in → audio out |
+| Synth With Presets | <a href="https://danielraffel.github.io/pulp-example-plugins/synth-with-presets/"><img src="screenshots/synth-with-presets.png" width="220"></a> | [▶ WAM](https://danielraffel.github.io/pulp-example-plugins/synth-with-presets/) · [▶ WebCLAP](https://pulp-wclap-demos.pages.dev/example-plugins/synth-with-presets/) | Instrument + factory preset bank, pitch bend & mod-wheel vibrato; clean recall semantics |
+| Gain | <a href="https://danielraffel.github.io/pulp-example-plugins/gain/"><img src="screenshots/gain.png" width="220"></a> | [▶ WAM](https://danielraffel.github.io/pulp-example-plugins/gain/) · [▶ WebCLAP](https://pulp-wclap-demos.pages.dev/example-plugins/gain/) | Plain utility effect — linear gain (fader) + equal-power pan (knob); stereo in → out |
 | gui-zoo | <img src="gui-zoo/baseline.png" width="220"> | —[^gui-zoo] | Installable widget-gallery plugin — a zero-DSP pass-through effect whose editor scrolls the full Ink & Signal widget board; also a deterministic screenshot fixture |
 
 [^gui-zoo]: gui-zoo has no web demo. It is a `Processor` whose only content is `create_view()`, and `create_view()` hard-returns `nullptr` in every WASM build (`core/format/src/wasm/headless_defaults.cpp`) — with no DSP and no reachable UI on this path there is nothing to run in the browser.
@@ -108,6 +120,13 @@ plugin. The compile target is Emscripten's
 Audio never auto-plays: every demo waits behind a click-to-start overlay, and an
 instrument demo gives you an on-screen keyboard (and your computer keyboard) to
 play it.
+
+The WAM gallery above is one of **two** web builds of the same `Processor`. The
+second, **WebCLAP**, compiles that same C++ with wasi-sdk and runs it through the
+real **CLAP ABI** in the browser (which needs a cross-origin-isolated host). For a
+neutral, side-by-side account of how the two are built, what they share with the
+native plugin, and the tradeoffs of each, see
+[**WAM vs WebCLAP: how the web demos are built**](web/WAM-vs-WEBCLAP.md).
 
 ## Credits
 
