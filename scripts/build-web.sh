@@ -97,7 +97,6 @@ DEMOS=(
 
 # Fresh output tree (docs/ is gitignored — never committed).
 rm -rf "${OUT_DIR}"
-mkdir -p "${OUT_DIR}/player"
 
 # The authored site — gallery + one page per demo + the <pulp-demo> player and
 # its canvas widgets — lives in web/site/ and is committed. Everything else in
@@ -106,21 +105,12 @@ mkdir -p "${OUT_DIR}/player"
 # after the loop enforces that rather than trusting it.
 cp -R "${REPO_ROOT}/web/site/." "${OUT_DIR}/"
 
-# The shared main-thread WAM host is served ONCE at player/wam-plugin.js. It is
-# loaded by the site page and told each demo's dsp+processor URLs, so it does not
-# need to sit next to the DSP.
-#
-# It DOES need wam-runtime.mjs beside it: wam-plugin.js imports
-# processorNameForUrl() from there, so that the AudioWorkletNode it creates asks
-# for the same per-module processor name the worklet registered. Ship a copy in
-# player/ as well as in each demo dir (the worklet imports its own).
-cp "${WASM_SRC}/wam-plugin.js"   "${OUT_DIR}/player/wam-plugin.js"
-cp "${WASM_SRC}/wam-runtime.mjs" "${OUT_DIR}/player/wam-runtime.mjs"
+# NOTE: player/wam-plugin.js + player/wam-runtime.mjs used to be staged here for the
+# VENDORED player, which imported them. The pages now import the pinned npm package,
+# which ships its own copy of that runtime — so nothing loads these and they are gone.
+# (Each demo dir still carries its own wam-runtime.mjs: the worklet imports it relative
+# to itself, which is a separate requirement and still very much load-bearing.)
 
-# The player imports the SDK's oscilloscope trigger (a scope that plots from the
-# raw analyser buffer shows a waveform sliding sideways every frame; wam-scope
-# finds the rising zero-crossing so it stands still). Ship it beside the player.
-cp "${WASM_SRC}/wam-scope.mjs"   "${OUT_DIR}/player/wam-scope.mjs"
 
 # Third-party attribution travels with the deployed site. The start overlay
 # inlines Lucide's ISC-licensed `play` glyph; ISC requires its copyright notice
@@ -176,22 +166,12 @@ if [[ "${missing}" -ne 0 ]]; then
     exit 1
 fi
 
-# --- Cache-bust the player import (authoritative) ----------------------------
-# GitHub Pages serves player/pulp-player.js with max-age=14400 (4h) but the demo
-# pages with max-age=600 (10m), and the page's `import ".../pulp-player.js"`
-# carries no version — so an updated player would not reach a returning visitor
-# for hours. Stamp every page's player import with a short content hash of the
-# DEPLOYED player so a change always forces a refetch, regardless of whether
-# gen-og was re-run. Only the main-thread entry import is versioned, never the
-# worklet processor/dsp URLs (whose two sides must hash to one processor name).
-PLAYER_JS="${OUT_DIR}/player/pulp-player.js"
-if [[ -f "${PLAYER_JS}" ]]; then
-    PLAYER_HASH="$( { shasum "${PLAYER_JS}" 2>/dev/null || sha1sum "${PLAYER_JS}"; } | cut -c1-8 )"
-    find "${OUT_DIR}" -type f -name 'index.html' -print0 | while IFS= read -r -d '' page; do
-        perl -0pi -e "s{(['\"])((?:\\.\\.?/)*player/pulp-player\\.js)(?:\\?v=[a-f0-9]+)?\\1}{\$1\$2?v=${PLAYER_HASH}\$1}g" "${page}"
-    done
-    echo "==> player import stamped ?v=${PLAYER_HASH}"
-fi
+# --- Player: pinned, not vendored ---------------------------------------------
+# The pages import @danielraffel/web-player by bare specifier, resolved by the import
+# map gen-og writes into every head. The PIN is the cache key — bump the version and
+# the URL changes, so a returning visitor refetches. That replaces the content-hash
+# cache-bust this used to need (GitHub Pages cached the vendored player for 4h while
+# pages were 10m, so an updated player took hours to reach anyone).
 
 # --- Bake Open Graph / Twitter meta into the deployed pages -------------------
 # gen-og.mjs rewrites each assembled page's <head> with og:/twitter: tags from
