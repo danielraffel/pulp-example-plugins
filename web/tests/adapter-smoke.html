@@ -21,8 +21,11 @@
   it with headless Chrome. Read the result at window.__smokeResult.
 -->
 <div id="app"></div>
+<script type="importmap">
+{ "imports": { "@danielraffel/web-player": "https://esm.sh/@danielraffel/web-player@0.2.1" } }
+</script>
 <script type="module">
-import { mountDemo } from "./pulp-player.js";
+import { mountDemo } from "@danielraffel/web-player";
 
 const calls = (window.__adapterCalls = []);
 const rec = (name, extra = {}) => calls.push({ name, ...extra });
