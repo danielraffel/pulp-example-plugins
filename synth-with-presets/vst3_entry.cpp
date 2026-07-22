@@ -9,5 +9,5 @@ static const Steinberg::FUID SynthWithPresetsUID(0x50554C50, 0x53507265,
 PULP_VST3_PLUGIN(SynthWithPresetsUID, "SynthPresets",
                  Steinberg::Vst::PlugType::kInstrumentSynth,
                  "Pulp Examples", "0.1.0",
-                 "https://github.com/danielraffel/pulp",
+                 "https://github.com/Generous-Corp/pulp",
                  pulp::examples::classic::create_synth_with_presets)
